@@ -81,6 +81,7 @@ def _load_app_secret() -> str:
     if _APP_SECRET is not None:
         return _APP_SECRET
     from kiro_crew.config.loader import config_dir
+
     secret_path = config_dir() / "apps" / APP_NAME / ".app_secret"
     if secret_path.is_file():
         _APP_SECRET = secret_path.read_text().strip()
@@ -88,6 +89,7 @@ def _load_app_secret() -> str:
         # Fallback: try the apps dir from manager
         try:
             from kiro_crew.apps.manager import app_dir
+
             alt = app_dir(APP_NAME) / ".app_secret"
             if alt.is_file():
                 _APP_SECRET = alt.read_text().strip()
@@ -112,7 +114,8 @@ def _redact_pr(pr: dict | None) -> dict | None:
         return pr
     return {
         k: (_redact(v) if isinstance(v, str) else v)
-        for k, v in pr.items() if not k.startswith("_")  # _repo etc. stay internal
+        for k, v in pr.items()
+        if not k.startswith("_")  # _repo etc. stay internal
     }
 
 
@@ -128,7 +131,10 @@ def _resolve_primary_checkout(path: str) -> str:
     try:
         out = subprocess.run(
             [git, "-C", path, "rev-parse", "--path-format=absolute", "--git-common-dir"],
-            capture_output=True, text=True, timeout=5, env=env,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            env=env,
         )
         common = out.stdout.strip()
         if out.returncode == 0 and Path(common).name == ".git":
@@ -185,6 +191,7 @@ async def _upstream_remote() -> str:
             return _UPSTREAM_REMOTE
     _UPSTREAM_REMOTE = "origin"
     return _UPSTREAM_REMOTE
+
 
 # --- stream watchdog deadline (module constant so tests can patch it) ---
 _RUN_DEADLINE_S = 1800
@@ -247,13 +254,10 @@ try:
         _POD_AVAILABLE = True
     elif sys.platform == "darwin":
         _POD_ERROR = (
-            "Pods are launchd user agents on macOS, but no `launchctl` was found "
-            "on PATH."
+            "Pods are launchd user agents on macOS, but no `launchctl` was found " "on PATH."
         )
     elif sys.platform == "linux":
-        _POD_ERROR = (
-            "Pods require `systemctl --user`, but no `systemctl` was found on PATH."
-        )
+        _POD_ERROR = "Pods require `systemctl --user`, but no `systemctl` was found on PATH."
     else:
         _POD_ERROR = (
             f"Pods need systemd --user (Linux) or launchd (macOS); this host is "
@@ -304,10 +308,14 @@ _GIT_ENV_NEUTRALIZERS: dict[str, str] = {
     "GIT_ALLOW_PROTOCOL": "https:ssh",
     "GIT_PROTOCOL_FROM_USER": "0",
     "GIT_CONFIG_COUNT": "4",
-    "GIT_CONFIG_KEY_0": "core.fsmonitor", "GIT_CONFIG_VALUE_0": "false",
-    "GIT_CONFIG_KEY_1": "core.hooksPath", "GIT_CONFIG_VALUE_1": "/dev/null",
-    "GIT_CONFIG_KEY_2": "credential.helper", "GIT_CONFIG_VALUE_2": "",
-    "GIT_CONFIG_KEY_3": "core.sshCommand", "GIT_CONFIG_VALUE_3": "ssh",
+    "GIT_CONFIG_KEY_0": "core.fsmonitor",
+    "GIT_CONFIG_VALUE_0": "false",
+    "GIT_CONFIG_KEY_1": "core.hooksPath",
+    "GIT_CONFIG_VALUE_1": "/dev/null",
+    "GIT_CONFIG_KEY_2": "credential.helper",
+    "GIT_CONFIG_VALUE_2": "",
+    "GIT_CONFIG_KEY_3": "core.sshCommand",
+    "GIT_CONFIG_VALUE_3": "ssh",
 }
 
 # The credential.helper reset above kills repo-injected helpers (the attack
@@ -478,8 +486,14 @@ async def _live_worktree_path(*, fresh: bool = False) -> str | None:
     # drive pointless repeat restarts.
     path = None
     rc, out, _err = await _run_cmd(
-        ["systemctl", "--user", "show", _LIVE_GATEWAY_UNIT,
-         "--property=WorkingDirectory", "--value"],
+        [
+            "systemctl",
+            "--user",
+            "show",
+            _LIVE_GATEWAY_UNIT,
+            "--property=WorkingDirectory",
+            "--value",
+        ],
         timeout=5,
     )
     if rc == 0 and out.strip():
@@ -515,14 +529,22 @@ async def _load_fallback_repos() -> None:
             if remote == upstream:
                 continue
             rc2, _, _ = await _run_cmd(
-                ["git", "-C", MAIN_REPO, "merge-base", "--is-ancestor",
-                 f"{remote}/{BASE_BRANCH}", f"{upstream}/{BASE_BRANCH}"],
+                [
+                    "git",
+                    "-C",
+                    MAIN_REPO,
+                    "merge-base",
+                    "--is-ancestor",
+                    f"{remote}/{BASE_BRANCH}",
+                    f"{upstream}/{BASE_BRANCH}",
+                ],
                 timeout=10,
             )
             if rc2 != 0:
                 continue
             rc3, url, _ = await _run_cmd(
-                ["git", "-C", MAIN_REPO, "remote", "get-url", remote], timeout=5,
+                ["git", "-C", MAIN_REPO, "remote", "get-url", remote],
+                timeout=5,
             )
             if rc3 == 0:
                 m = re.search(r"[:/]([^/]+/[^/]+?)(?:\.git)?$", url.strip())
@@ -571,7 +593,9 @@ async def _load_trusted_credential_helpers() -> None:
                 # withheld; only the config KEY name is recorded.
                 logger.warning(
                     "dev-fleet: skipping helper with unverifiable provenance"
-                    " for config key %s (%s scope)", key, scope.lstrip("-"),
+                    " for config key %s (%s scope)",
+                    key,
+                    scope.lstrip("-"),
                 )
                 continue
             extra[f"GIT_CONFIG_KEY_{idx}"] = key
@@ -734,8 +758,12 @@ def _trusted_bin(name: str) -> str | None:
     # in the SERVICE environment (operator-owned unit file), never derived
     # from the inherited PATH.
     override = os.environ.get(f"KIROCREW_DEVFLEET_BIN_{name.upper().replace('-', '_')}")
-    if override and Path(override).is_absolute() and Path(override).is_file() \
-            and os.access(override, os.X_OK):
+    if (
+        override
+        and Path(override).is_absolute()
+        and Path(override).is_file()
+        and os.access(override, os.X_OK)
+    ):
         _TRUSTED_BIN_CACHE[name] = override
         return override
     suffixes = ("", ".exe", ".cmd") if platform_compat.IS_WINDOWS else ("",)
@@ -757,9 +785,7 @@ def _trusted_bin(name: str) -> str | None:
                 # the resolved target must not be writable by US and must
                 # carry no group/other write bits. A user-planted shim is
                 # writable by its planter; real system binaries are not.
-                if platform_compat.IS_POSIX and (
-                    os.access(real, os.W_OK) or st.st_mode & 0o022
-                ):
+                if platform_compat.IS_POSIX and (os.access(real, os.W_OK) or st.st_mode & 0o022):
                     continue
                 # Pin the RESOLVED target, not the entry we searched: a bin-dir
                 # entry can itself be a user-writable symlink (Homebrew's
@@ -803,8 +829,12 @@ def _toolchain_bin(name: str) -> str | None:
 
 
 async def _run_cmd(
-    cmd: list[str], *, cwd: str | None = None, env: dict | None = None,
-    timeout: int = 30, mode: str = "standard"
+    cmd: list[str],
+    *,
+    cwd: str | None = None,
+    env: dict | None = None,
+    timeout: int = 30,
+    mode: str = "standard",
 ) -> tuple[int, str, str]:
     """Run a subprocess asynchronously, return (returncode, stdout, stderr).
 
@@ -859,7 +889,8 @@ async def _run_cmd(
             start_new_session=platform_compat.IS_POSIX,
             creationflags=(
                 subprocess.CREATE_NEW_PROCESS_GROUP  # type: ignore[attr-defined]
-                if platform_compat.IS_WINDOWS else 0
+                if platform_compat.IS_WINDOWS
+                else 0
             ),
         )
     except OSError as exc:
@@ -885,7 +916,11 @@ async def _run_cmd(
             proc.kill()
             await proc.wait()
             raise
-        return proc.returncode or 0, (stdout or b"").decode(errors="replace"), (stderr or b"").decode(errors="replace")
+        return (
+            proc.returncode or 0,
+            (stdout or b"").decode(errors="replace"),
+            (stderr or b"").decode(errors="replace"),
+        )
     finally:
         if cleanup:
             try:
@@ -960,8 +995,12 @@ def _parse_step_marker(text: str) -> tuple[int | None, str | None]:
 
 
 async def _start_run(
-    label: str, cmd: list[str], *, cwd: str | None = None,
-    env: dict | None = None, cleanup_paths: list[str] | None = None,
+    label: str,
+    cmd: list[str],
+    *,
+    cwd: str | None = None,
+    env: dict | None = None,
+    cleanup_paths: list[str] | None = None,
 ) -> str:
     """Start a background subprocess with output streaming and watchdog.
 
@@ -979,8 +1018,11 @@ async def _start_run(
         for k in done[: max(0, len(done) - _RUNS_MAX_COMPLETED + 1)]:
             _RUNS.pop(k, None)
         _RUNS[rid] = {
-            "status": "running", "exit_code": None, "label": label,
-            "output": [], "started": time.time(),
+            "status": "running",
+            "exit_code": None,
+            "label": label,
+            "output": [],
+            "started": time.time(),
         }
 
     async def worker() -> None:
@@ -1005,7 +1047,8 @@ async def _start_run(
                     start_new_session=platform_compat.IS_POSIX,
                     creationflags=(
                         subprocess.CREATE_NEW_PROCESS_GROUP  # type: ignore[attr-defined]
-                        if platform_compat.IS_WINDOWS else 0
+                        if platform_compat.IS_WINDOWS
+                        else 0
                     ),
                 )
             except OSError as exc:
@@ -1076,7 +1119,7 @@ async def _start_run(
                 _RUNS[rid]["exit_code"] = -1
                 _RUNS[rid]["output"].append("[error] " + str(exc))
         finally:
-            for cp in (cleanup_paths or []):
+            for cp in cleanup_paths or []:
                 try:
                     os.unlink(cp)
                 except OSError:
@@ -1099,9 +1142,7 @@ _OWNER_REPO_RETRY_AT: float = 0.0  # monotonic deadline before retrying a failed
 async def _repo_owner_name() -> str | None:
     """Derive owner/repo from the upstream remote URL."""
     remote = await _upstream_remote()
-    rc, stdout, _ = await _run_cmd(
-        ["git", "-C", MAIN_REPO, "remote", "get-url", remote], timeout=5
-    )
+    rc, stdout, _ = await _run_cmd(["git", "-C", MAIN_REPO, "remote", "get-url", remote], timeout=5)
     if rc != 0:
         return None
     url = stdout.strip()
@@ -1133,8 +1174,21 @@ async def _pr_query_one(owner_repo: str, branch: str) -> dict | None:
     # kept INTERNAL (moved to `_body`) — it feeds issue-ref parsing but is
     # dropped from the payload by _redact_pr (which skips `_`-prefixed keys).
     rc, stdout, _ = await _run_cmd(
-        ["gh", "pr", "list", "--repo", owner_repo, "--head", branch,
-         "--json", "number,state,url,isDraft,title,body", "--state", "all", "--limit", "1"],
+        [
+            "gh",
+            "pr",
+            "list",
+            "--repo",
+            owner_repo,
+            "--head",
+            branch,
+            "--json",
+            "number,state,url,isDraft,title,body",
+            "--state",
+            "all",
+            "--limit",
+            "1",
+        ],
         timeout=15,
     )
     if rc != 0:
@@ -1160,7 +1214,7 @@ async def _fetch_pr_status(branch: str) -> dict | None:
     pr = await _pr_query_one(owner_repo, branch)
     if pr is not None:
         return pr
-    for repo in (_FALLBACK_REPOS or []):
+    for repo in _FALLBACK_REPOS or []:
         pr = await _pr_query_one(repo, branch)
         if pr is not None:
             return pr
@@ -1178,8 +1232,7 @@ async def _head_contained_in_pr(path: str, branch_oid: str, pr_head_oid: str) ->
     if branch_oid.strip() == pr_head_oid.strip():
         return True
     rc, _, _err = await _run_cmd(
-        ["git", "-C", path, "merge-base", "--is-ancestor",
-         branch_oid.strip(), pr_head_oid.strip()],
+        ["git", "-C", path, "merge-base", "--is-ancestor", branch_oid.strip(), pr_head_oid.strip()],
         timeout=10,
     )
     return rc == 0
@@ -1198,8 +1251,7 @@ async def _fetch_pr_head_oid(branch: str, repo: str | None = None) -> str | None
     if not owner_repo or not branch:
         return None
     rc, stdout, _ = await _run_cmd(
-        ["gh", "pr", "view", branch, "--repo", owner_repo,
-         "--json", "headRefOid,state"],
+        ["gh", "pr", "view", branch, "--repo", owner_repo, "--json", "headRefOid,state"],
         timeout=15,
     )
     if rc != 0:
@@ -1334,9 +1386,7 @@ async def _html_repo_base() -> str | None:
     if _HTML_BASE:
         return _HTML_BASE
     remote = await _upstream_remote()
-    rc, out, _ = await _run_cmd(
-        ["git", "-C", MAIN_REPO, "remote", "get-url", remote], timeout=5
-    )
+    rc, out, _ = await _run_cmd(["git", "-C", MAIN_REPO, "remote", "get-url", remote], timeout=5)
     if rc == 0:
         base = _parse_html_repo_base(out.strip())
         if base:
@@ -1357,6 +1407,7 @@ def _load_dev_fleet_cfg() -> dict:
     section: dict = {}
     try:
         from kiro_crew.config.loader import config_dir
+
         base = config_dir()
     except Exception:  # noqa: BLE001
         return section
@@ -1392,12 +1443,10 @@ async def _resolve_context(
     summary = _pick_summary(subjects)
     return {
         "issues": [
-            {"number": n, "url": _issue_url(html_base, n)}
-            for n in issue_nums[:_CTX_MAX_ISSUES]
+            {"number": n, "url": _issue_url(html_base, n)} for n in issue_nums[:_CTX_MAX_ISSUES]
         ],
         "tickets": [
-            {"id": t, "url": _render_ticket_url(tpl, t)}
-            for t in ticket_ids[:_CTX_MAX_TICKETS]
+            {"id": t, "url": _render_ticket_url(tpl, t)} for t in ticket_ids[:_CTX_MAX_TICKETS]
         ],
         "summary": _redact(summary) if summary else None,
     }
@@ -1413,8 +1462,13 @@ async def _build_context(branch: str, path: str, pr: dict | None) -> dict:
     # Subject + body of the last ~10 non-merge commits, record-separated by
     # 0x1e (bodies contain newlines, so newline can't delimit records).
     log = await _git(
-        path, "log", f"{remote}/{BASE_BRANCH}..HEAD", "--no-merges", "-10",
-        "--format=%s%x1f%b%x1e", timeout=12,
+        path,
+        "log",
+        f"{remote}/{BASE_BRANCH}..HEAD",
+        "--no-merges",
+        "-10",
+        "--format=%s%x1f%b%x1e",
+        timeout=12,
     )
     if log:
         for rec in log.split("\x1e"):
@@ -1471,7 +1525,7 @@ def _parse_worktree_porcelain(raw: str) -> list[dict]:
             # git flags an entry `prunable` when its checkout directory is gone
             # but the admin record survives (a `rm -rf` with no
             # `git worktree prune`). The reason text is optional.
-            current["prunable"] = line[len("prunable"):].strip() or "unknown"
+            current["prunable"] = line[len("prunable") :].strip() or "unknown"
     if current:
         entries.append(current)
     return entries
@@ -1501,7 +1555,7 @@ async def _discover_worktrees() -> list[dict]:
     # MAIN_REPO itself points at a linked worktree (it is only the
     # repository discovery hint).
     for i, e in enumerate(entries):
-        e["is_main"] = (i == 0)
+        e["is_main"] = i == 0
     # A `prunable` entry has no checkout on disk, so every git call against its
     # path fails and it renders as a ghost row with no branch, behind count or
     # timestamp — and no refresh ever clears it, because git keeps reporting the
@@ -1511,21 +1565,21 @@ async def _discover_worktrees() -> list[dict]:
     return [e for e in entries if e.get("is_main") or not e.get("prunable")]
 
 
-async def _git(
-    git_dir: str, *args: str, timeout: int = 6, mode: str = "standard"
-) -> str | None:
+async def _git(git_dir: str, *args: str, timeout: int = 6, mode: str = "standard") -> str | None:
     # Repo-controlled execution vectors are neutralized centrally in
     # _run_cmd via _GIT_ENV_NEUTRALIZERS — no per-call-site flags needed.
-    rc, stdout, _ = await _run_cmd(
-        ["git", "-C", git_dir, *args], timeout=timeout, mode=mode
-    )
+    rc, stdout, _ = await _run_cmd(["git", "-C", git_dir, *args], timeout=timeout, mode=mode)
     return stdout.strip() if rc == 0 else None
 
 
 async def _git_info(path: str) -> dict:
     info: dict = {
-        "branch": None, "head": None, "dirty": False,
-        "ahead": 0, "behind": 0, "last_updated_at": None,
+        "branch": None,
+        "head": None,
+        "dirty": False,
+        "ahead": 0,
+        "behind": 0,
+        "last_updated_at": None,
     }
     info["branch"] = await _git(path, "rev-parse", "--abbrev-ref", "HEAD")
     info["head"] = await _git(path, "rev-parse", "--short=7", "HEAD")
@@ -1603,9 +1657,7 @@ async def _fleet_build() -> dict:
     # Removals that landed DURING this build are invisible to it — the git state
     # it read predates them. Re-apply them so a slow build cannot put back a row
     # an eviction already removed.
-    data = _drop_worktrees(
-        data, {n for n, e in _FLEET_TOMBSTONES.items() if e > started}
-    )
+    data = _drop_worktrees(data, {n for n, e in _FLEET_TOMBSTONES.items() if e > started})
     # Evictions that predate this build's start need no tombstone: `_fleet_forget`
     # runs only after git has removed the worktree, so no later build can see it.
     _FLEET_TOMBSTONES = {n: e for n, e in _FLEET_TOMBSTONES.items() if e > started}
@@ -1694,9 +1746,7 @@ def _is_checkout(path: str) -> bool:
         return False
 
 
-def _serving_install_reason_sync(
-    main_repo: str, managed: "tuple[str, ...]"
-) -> str | None:
+def _serving_install_reason_sync(main_repo: str, managed: "tuple[str, ...]") -> str | None:
     """Why the install serving this dashboard is not one Dev Fleet manages.
 
     Blocking — resolves paths. Call it through an executor, never on the loop.
@@ -1750,9 +1800,7 @@ def _serving_install_reason_sync(
 
 async def _serving_install_reason(worktrees: "list[dict]") -> str | None:
     global _SERVING_REASON
-    managed = tuple(sorted(
-        str(wt["path"]) for wt in worktrees if wt.get("path")
-    ))
+    managed = tuple(sorted(str(wt["path"]) for wt in worktrees if wt.get("path")))
     key = (MAIN_REPO, managed)
     if _SERVING_REASON is not None and _SERVING_REASON[0] == key:
         return _SERVING_REASON[1]
@@ -1770,9 +1818,7 @@ async def _build_fleet() -> dict:
     staged_path = _staged_target()
     worktrees = await _discover_worktrees()
     cfg = _load_cfg()
-    legacy_prefixes = tuple(
-        f"{r.split('/')[-1].lower()}-wt-" for r in (_FALLBACK_REPOS or [])
-    )
+    legacy_prefixes = tuple(f"{r.split('/')[-1].lower()}-wt-" for r in (_FALLBACK_REPOS or []))
     wts = []
     for wt in worktrees:
         path = wt.get("path", "")
@@ -1806,17 +1852,13 @@ async def _build_fleet() -> dict:
         # Pod state, by contrast, only exists where pods can run.
         if _POD_AVAILABLE and cfg and not is_main:
             try:
-                active = await loop.run_in_executor(
-                    subprocess_executor(), rt.active_names, cfg
-                )
+                active = await loop.run_in_executor(subprocess_executor(), rt.active_names, cfg)
                 running = name in active
                 if running:
                     port = await loop.run_in_executor(
                         subprocess_executor(), rt.derive_port, cfg, name
                     )
-                    health = await loop.run_in_executor(
-                        subprocess_executor(), rt.health, port, 2
-                    )
+                    health = await loop.run_in_executor(subprocess_executor(), rt.health, port, 2)
             except Exception:  # noqa: BLE001
                 pass
 
@@ -1839,24 +1881,36 @@ async def _build_fleet() -> dict:
             else {"issues": [], "tickets": [], "summary": None}
         )
 
-        wts.append({
-            # "name" doubles as the opaque identifier for follow-up actions
-            # (validated against the discovered set on every call); display
-            # fields sourced from git/gh output are redacted.
-            "name": name, "path": _redact(path), "is_main": is_main,
-            "running": running, "port": port, "health": health,
-            "is_live": live_path is not None and _same_path(path, live_path),
-            "is_staged": staged_path is not None and _same_path(path, staged_path),
-            "has_venv": has_venv, "has_dist": has_dist,
-            "branch": _redact(g["branch"] or branch or ""), "head": g["head"] or wt.get("head", "")[:7],
-            "dirty": g["dirty"], "behind": g["behind"],
-            "pr": _redact_pr(pr), "shipped": shipped,
-            "issues": ctx["issues"], "tickets": ctx["tickets"],
-            "summary": ctx["summary"],
-            "legacy": bool(legacy_prefixes) and not is_main
-            and name.lower().startswith(legacy_prefixes),
-            "last_updated_at": g["last_updated_at"],
-        })
+        wts.append(
+            {
+                # "name" doubles as the opaque identifier for follow-up actions
+                # (validated against the discovered set on every call); display
+                # fields sourced from git/gh output are redacted.
+                "name": name,
+                "path": _redact(path),
+                "is_main": is_main,
+                "running": running,
+                "port": port,
+                "health": health,
+                "is_live": live_path is not None and _same_path(path, live_path),
+                "is_staged": staged_path is not None and _same_path(path, staged_path),
+                "has_venv": has_venv,
+                "has_dist": has_dist,
+                "branch": _redact(g["branch"] or branch or ""),
+                "head": g["head"] or wt.get("head", "")[:7],
+                "dirty": g["dirty"],
+                "behind": g["behind"],
+                "pr": _redact_pr(pr),
+                "shipped": shipped,
+                "issues": ctx["issues"],
+                "tickets": ctx["tickets"],
+                "summary": ctx["summary"],
+                "legacy": bool(legacy_prefixes)
+                and not is_main
+                and name.lower().startswith(legacy_prefixes),
+                "last_updated_at": g["last_updated_at"],
+            }
+        )
     return {
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "worktrees": wts,
@@ -1933,19 +1987,27 @@ async def _worktree_detail(name: str) -> dict:
     commits: list[dict] = []
     if not is_main:
         log = await _git(
-            path, "log", f"{remote}/{BASE_BRANCH}..HEAD", "-12",
+            path,
+            "log",
+            f"{remote}/{BASE_BRANCH}..HEAD",
+            "-12",
             "--format=%h\x1f%s\x1f%cr",
         )
         if log:
             for line in log.splitlines():
                 parts = line.split("\x1f")
                 if len(parts) == 3:
-                    commits.append({"hash": parts[0], "subject": _redact(parts[1]), "when": parts[2]})
+                    commits.append(
+                        {"hash": parts[0], "subject": _redact(parts[1]), "when": parts[2]}
+                    )
 
     design_docs: list[str] = []
     if not is_main:
         diff_out = await _git(
-            path, "diff", "--name-only", f"{remote}/{BASE_BRANCH}...HEAD",
+            path,
+            "diff",
+            "--name-only",
+            f"{remote}/{BASE_BRANCH}...HEAD",
             timeout=15,
         )
         if diff_out:
@@ -1975,9 +2037,7 @@ async def _worktree_detail(name: str) -> dict:
     if _POD_AVAILABLE and cfg and not is_main:
         try:
             loop = asyncio.get_running_loop()
-            active = await loop.run_in_executor(
-                subprocess_executor(), rt.active_names, cfg
-            )
+            active = await loop.run_in_executor(subprocess_executor(), rt.active_names, cfg)
             pod_running = name in active
             if pod_running:
                 pod_port = await loop.run_in_executor(
@@ -1990,24 +2050,30 @@ async def _worktree_detail(name: str) -> dict:
     # commits already fetched above (their subjects) + the PR body — no extra
     # git log, so the detail endpoint keeps to a single own-commits log call.
     ctx = (
-        await _resolve_context(branch, [c["subject"] for c in commits], [],
-                               (pr or {}).get("_body"))
+        await _resolve_context(branch, [c["subject"] for c in commits], [], (pr or {}).get("_body"))
         if branch and not is_main
         else {"issues": [], "tickets": [], "summary": None}
     )
     return {
-        "name": name, "path": _redact(path),
-        "branch": _redact(g["branch"] or branch or ""), "head": g["head"],
-        "dirty": g["dirty"], "own_commits": own_commits,
+        "name": name,
+        "path": _redact(path),
+        "branch": _redact(g["branch"] or branch or ""),
+        "head": g["head"],
+        "dirty": g["dirty"],
+        "own_commits": own_commits,
         "real_dirty": await _real_dirty(path),
-        "pr": _redact_pr(pr), "pr_merged": _is_pr_merged(pr),
-        "issues": ctx["issues"], "tickets": ctx["tickets"],
+        "pr": _redact_pr(pr),
+        "pr_merged": _is_pr_merged(pr),
+        "issues": ctx["issues"],
+        "tickets": ctx["tickets"],
         "summary": ctx["summary"],
-        "commits": commits, "design_docs": design_docs,
+        "commits": commits,
+        "design_docs": design_docs,
         "disk_mb": disk_mb,
         "behind": g["behind"],
         "is_main": is_main,
-        "pod_running": pod_running, "pod_port": pod_port,
+        "pod_running": pod_running,
+        "pod_port": pod_port,
     }
 
 
@@ -2026,8 +2092,16 @@ def _load_cfg():
 # environment carries credentials (Slack/cloud tokens) that build scripts
 # must never be able to read.
 _SAFE_ENV_KEYS = (
-    "PATH", "HOME", "USER", "LOGNAME", "SHELL", "LANG", "LC_ALL", "TMPDIR",
-    "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS",
+    "PATH",
+    "HOME",
+    "USER",
+    "LOGNAME",
+    "SHELL",
+    "LANG",
+    "LC_ALL",
+    "TMPDIR",
+    "XDG_RUNTIME_DIR",
+    "DBUS_SESSION_BUS_ADDRESS",
 )
 
 
@@ -2153,9 +2227,7 @@ async def _pod_checkout_guard(name: str) -> str | None:
         # cannot attribute; acting on it would stop/expose another repo's
         # gateway. Fail closed on active or unverifiable.
         try:
-            active = await loop.run_in_executor(
-                subprocess_executor(), rt.active_names, cfg
-            )
+            active = await loop.run_in_executor(subprocess_executor(), rt.active_names, cfg)
         except Exception as exc:  # noqa: BLE001
             return f"cannot verify active pods: {_redact(str(exc))}"
         if name in active:
@@ -2201,9 +2273,7 @@ async def _pod_up(name: str) -> dict:
     if _POD_AVAILABLE and cfg:
         try:
             loop = asyncio.get_running_loop()
-            active = await loop.run_in_executor(
-                subprocess_executor(), rt.active_names, cfg
-            )
+            active = await loop.run_in_executor(subprocess_executor(), rt.active_names, cfg)
             if name not in active:
                 return {"ok": False, "error": "pod not active after start"}
         except Exception as exc:  # noqa: BLE001
@@ -2235,9 +2305,7 @@ async def _pod_down(name: str) -> dict:
     if _POD_AVAILABLE and cfg:
         try:
             loop = asyncio.get_running_loop()
-            active = await loop.run_in_executor(
-                subprocess_executor(), rt.active_names, cfg
-            )
+            active = await loop.run_in_executor(subprocess_executor(), rt.active_names, cfg)
             if name in active:
                 return {"ok": False, "error": "pod still active after shutdown"}
         except Exception as exc:  # noqa: BLE001
@@ -2265,12 +2333,8 @@ async def _pod_token(name: str) -> dict:
         return {"ok": False, "error": "PodConfig unavailable"}
     try:
         loop = asyncio.get_running_loop()
-        token = await loop.run_in_executor(
-            subprocess_executor(), rt.mint_token, cfg, name, "2h"
-        )
-        port = await loop.run_in_executor(
-            subprocess_executor(), rt.derive_port, cfg, name
-        )
+        token = await loop.run_in_executor(subprocess_executor(), rt.mint_token, cfg, name, "2h")
+        port = await loop.run_in_executor(subprocess_executor(), rt.derive_port, cfg, name)
         return {"ok": True, "token": token, "url": f"http://127.0.0.1:{port}/?token={token}"}
     except Exception as exc:  # noqa: BLE001
         return {"ok": False, "error": str(exc)}
@@ -2284,9 +2348,7 @@ async def _pod_logs(name: str, n: int = 120) -> dict:
     if cfg is None:
         return {"ok": False, "error": "PodConfig unavailable"}
     loop = asyncio.get_running_loop()
-    raw = await loop.run_in_executor(
-        subprocess_executor(), rt.recent_journal, cfg, name, n
-    )
+    raw = await loop.run_in_executor(subprocess_executor(), rt.recent_journal, cfg, name, n)
     return {"ok": True, "logs": _redact(raw)}
 
 
@@ -2315,11 +2377,16 @@ async def _pod_provision(name: str) -> dict:
             subprocess_executor(),
             functools.partial(
                 sandboxed_spawn_argv,
-                _find_cli() + ["pod", "provision", name], "strict", env=_pod_env(),
+                _find_cli() + ["pod", "provision", name],
+                "strict",
+                env=_pod_env(),
             ),
         )
         rid = await _start_run(
-            "provision " + name, p_argv, cwd=MAIN_REPO, env=p_env,
+            "provision " + name,
+            p_argv,
+            cwd=MAIN_REPO,
+            env=p_env,
             cleanup_paths=[p_cleanup] if p_cleanup else None,
         )
         _PROVISION_INFLIGHT[name] = rid
@@ -2372,6 +2439,7 @@ async def _worktree_remove(
     name: str,
     force: bool = False,
     progress: Callable[[str], None] | None = None,
+    _caller: str = "handler",
 ) -> dict:
     """Remove a feature worktree. All safety gates preserved.
 
@@ -2391,28 +2459,38 @@ async def _worktree_remove(
 
     live_path = await _live_worktree_path(fresh=True)
     if live_path is not None and _same_path(path, live_path):
-        return {"ok": False, "error": (
-            "refusing: this worktree is running the live gateway -- "
-            "switch the gateway to another checkout first"
-        )}
+        return {
+            "ok": False,
+            "error": (
+                "refusing: this worktree is running the live gateway -- "
+                "switch the gateway to another checkout first"
+            ),
+        }
     # The systemd unit only covers service-managed gateways. A gateway (and
     # this backend, its subprocess) launched directly from a feature worktree
     # is invisible to it -- so also refuse when the target IS the checkout our
     # own running code was imported from.
     own_checkout = _own_checkout_path()
     if own_checkout is not None and _same_path(path, own_checkout):
-        return {"ok": False, "error": (
-            "refusing: this worktree is the checkout the current gateway "
-            "process is running from -- switch checkouts first"
-        )}
+        return {
+            "ok": False,
+            "error": (
+                "refusing: this worktree is the checkout the current gateway "
+                "process is running from -- switch checkouts first"
+            ),
+        }
 
     if not force:
         dirty = await _real_dirty(path)
         if dirty is not False:
-            return {"ok": False, "error": (
-                "worktree has uncommitted changes (use force to override)"
-                if dirty else "cannot verify worktree state (git status failed)"
-            )}
+            return {
+                "ok": False,
+                "error": (
+                    "worktree has uncommitted changes (use force to override)"
+                    if dirty
+                    else "cannot verify worktree state (git status failed)"
+                ),
+            }
 
     pr = (await _pr_status_cached(branch)) if branch else None
     own = await _own_commits_count(path)
@@ -2424,30 +2502,119 @@ async def _worktree_remove(
                 "pr": _redact_pr(pr),
             }
 
+    # Teardown guard: even with force=True, refuse to destroy a dirty worktree
+    # whose PR is not merged — that combination means unrecoverable data loss
+    # (uncommitted edits on an unmerged branch). Force retains its meaning for
+    # merged-dirty and diverged-OID overrides where the work IS already shipped.
+    if force and not _is_pr_merged(pr):
+        dirty = await _real_dirty(path)
+        if dirty is True:
+            logger.info(
+                "worktree_removal_audit: worktree=%s branch=%s caller=%s force=%s "
+                "dirty=True own=%s pr_state=%s verdict_oid=n/a "
+                "action=refused_dirty_unmerged",
+                name,
+                branch,
+                _caller,
+                force,
+                own,
+                (pr or {}).get("state", "none"),
+            )
+            return {
+                "ok": False,
+                "error": (
+                    "refusing forced removal: worktree has uncommitted changes "
+                    "and PR is not merged — this would cause unrecoverable data "
+                    f"loss (PR state: {(pr or {}).get('state', 'no PR')})"
+                ),
+                "pr": _redact_pr(pr),
+            }
+        elif dirty is None:
+            logger.info(
+                "worktree_removal_audit: worktree=%s branch=%s caller=%s force=%s "
+                "dirty=unknown own=%s pr_state=%s verdict_oid=n/a "
+                "action=refused_unverifiable",
+                name,
+                branch,
+                _caller,
+                force,
+                own,
+                (pr or {}).get("state", "none"),
+            )
+            return {
+                "ok": False,
+                "error": (
+                    "cannot verify worktree cleanliness (git status failed) — "
+                    "refusing forced removal"
+                ),
+                "pr": _redact_pr(pr),
+            }
+
+    # Fresh-MERGED gate: when force=True and the CACHED verdict says MERGED,
+    # confirm with a live gh query before allowing destruction of a dirty or
+    # unverifiable worktree. A permanently cached MERGED verdict (reused branch
+    # name whose old PR merged) would otherwise skip the unmerged guard above.
+    if force and _is_pr_merged(pr) and branch:
+        dirty = await _real_dirty(path)
+        if dirty is not False:
+            fresh_head = await _fetch_pr_head_oid(branch, repo=(pr or {}).get("_repo"))
+            if fresh_head is None:
+                logger.info(
+                    "worktree_removal_audit: worktree=%s branch=%s caller=%s "
+                    "force=%s dirty=%s own=%s pr_state=MERGED(cached) "
+                    "fresh_merged=False verdict_oid=n/a "
+                    "action=refused_stale_merged",
+                    name,
+                    branch,
+                    _caller,
+                    force,
+                    "unknown" if dirty is None else "True",
+                    own,
+                )
+                return {
+                    "ok": False,
+                    "error": (
+                        "refusing forced removal: cached PR state is MERGED but "
+                        "fresh verification failed (stale cache or reused branch "
+                        "name) — cannot confirm work is shipped"
+                    ),
+                    "pr": _redact_pr(pr),
+                }
+
     # Pin the branch ref NOW — the same OID the safety verdict below evaluates
     # is the expected-old-OID for the atomic delete. A commit landing at any
     # point after this pin moves the ref, update-ref -d fails, branch retained.
     verdict_oid = (await _git(MAIN_REPO, "rev-parse", f"refs/heads/{branch}")) if branch else None
     if branch and branch != BASE_BRANCH and verdict_oid is None:
-        return {"ok": False, "error": (
-            "cannot pin branch OID (git rev-parse failed) — refusing removal"
-        )}
+        return {
+            "ok": False,
+            "error": ("cannot pin branch OID (git rev-parse failed) — refusing removal"),
+        }
 
     # Squash-safe race guard: for merged PRs, verify the branch tip matches
     # the PR's merged headRefOid. A commit pushed after merge moves the OID.
+    # The pr_head_oid is reused later in the ref-delete gate for squash-safe
+    # containment — hoist to this scope so both code paths see it.
+    pr_head_oid: str | None = None
     if not force and _is_pr_merged(pr) and branch:
         branch_oid = verdict_oid
         if branch_oid is None:
-            return {"ok": False, "error": (
-                "cannot verify branch OID (git rev-parse failed) — "
-                "refusing non-forced removal; retry or use force"
-            )}
+            return {
+                "ok": False,
+                "error": (
+                    "cannot verify branch OID (git rev-parse failed) — "
+                    "refusing non-forced removal; retry or use force"
+                ),
+            }
         pr_head_oid = await _fetch_pr_head_oid(branch, repo=(pr or {}).get("_repo"))
         if pr_head_oid is None:
-            return {"ok": False, "error": (
-                "cannot verify PR head OID (gh query failed) — "
-                "refusing non-forced removal; retry or use force"
-            )}
+            return {
+                "ok": False,
+                "error": (
+                    "cannot verify PR head OID (gh query failed) — "
+                    "refusing non-forced removal; retry or use force"
+                ),
+            }
         if not await _head_contained_in_pr(path, branch_oid, pr_head_oid):
             return {
                 "ok": False,
@@ -2471,9 +2638,7 @@ async def _worktree_remove(
     if _POD_AVAILABLE and cfg:
         try:
             loop = asyncio.get_running_loop()
-            active = await loop.run_in_executor(
-                subprocess_executor(), rt.active_names, cfg
-            )
+            active = await loop.run_in_executor(subprocess_executor(), rt.active_names, cfg)
             if name in active:
                 r = await _pod_down(name)
                 if not r.get("ok"):
@@ -2510,13 +2675,12 @@ async def _worktree_remove(
         if _POD_AVAILABLE and cfg:
             try:
                 loop = asyncio.get_running_loop()
-                active3 = await loop.run_in_executor(
-                    subprocess_executor(), rt.active_names, cfg
-                )
+                active3 = await loop.run_in_executor(subprocess_executor(), rt.active_names, cfg)
                 if name in active3:
-                    return {"ok": False, "error": (
-                        "pod became active again before removal — refusing"
-                    )}
+                    return {
+                        "ok": False,
+                        "error": ("pod became active again before removal — refusing"),
+                    }
             except Exception as exc:
                 return {
                     "ok": False,
@@ -2529,17 +2693,67 @@ async def _worktree_remove(
         if rc != 0:
             return {"ok": False, "error": _redact((stderr or stdout).strip()[:300])}
 
-        # delete branch if shipped/empty — atomically against the pinned OID
+        # delete branch if shipped/empty — atomically against the pinned OID.
+        # Fail-closed ancestry gate: even when the cached PR status says MERGED,
+        # verify the branch OID is actually contained in the base branch. A stale
+        # or wrong merged verdict cannot delete the only local pointer to unmerged
+        # commits — leaving a dangling ref is recoverable; deleting one is not.
+        # OR: squash-safe containment — a squash-merged branch head is never an
+        # ancestor of the base, but IS contained in the PR head (the squash
+        # commit). When ancestry fails, verify containment via _head_contained_in_pr
+        # using the pr_head_oid already fetched above (or fresh if needed).
         if branch and branch != BASE_BRANCH and verdict_oid:
+            should_delete = False
             if _is_pr_merged(pr) or own == 0:
+                remote = await _upstream_remote()
+                rc_anc, _, _ = await _run_cmd(
+                    [
+                        "git",
+                        "-C",
+                        MAIN_REPO,
+                        "merge-base",
+                        "--is-ancestor",
+                        verdict_oid.strip(),
+                        f"{remote}/{BASE_BRANCH}",
+                    ],
+                    timeout=10,
+                )
+                should_delete = rc_anc == 0
+                # Squash-safe fallback: ancestry fails for squash/rebase merges.
+                # Use the containment check (branch OID is ancestor of PR head).
+                if not should_delete and _is_pr_merged(pr):
+                    head_oid = pr_head_oid or await _fetch_pr_head_oid(
+                        branch, repo=(pr or {}).get("_repo")
+                    )
+                    if head_oid:
+                        should_delete = await _head_contained_in_pr(
+                            MAIN_REPO, verdict_oid.strip(), head_oid.strip()
+                        )
+            if should_delete:
                 await _git(
-                    MAIN_REPO, "update-ref", "-d",
-                    f"refs/heads/{branch}", verdict_oid.strip(), timeout=10,
+                    MAIN_REPO,
+                    "update-ref",
+                    "-d",
+                    f"refs/heads/{branch}",
+                    verdict_oid.strip(),
+                    timeout=10,
                 )
 
     # Every removal path lands here — the single-worktree handler, each parallel
     # prune worker, and the auto-prune reaper — so this is the one place the
     # cached snapshot has to be told the row is gone.
+    logger.info(
+        "worktree_removal_audit: worktree=%s branch=%s caller=%s force=%s "
+        "dirty=%s own=%s pr_state=%s verdict_oid=%s action=removed",
+        name,
+        branch,
+        _caller,
+        force,
+        "unknown",
+        own,
+        (pr or {}).get("state", "none"),
+        (verdict_oid or "").strip()[:12] if verdict_oid else "none",
+    )
     _fleet_forget(name)
     return {"ok": True, "removed": True, "stopped_pod": stopped_pod, "pr": _redact_pr(pr)}
 
@@ -2578,9 +2792,12 @@ async def _sync_start_locked() -> dict:
     if head is None:
         return {"ok": False, "error": "cannot determine checked-out branch (git failed)"}
     if head.strip() != BASE_BRANCH:
-        return {"ok": False, "error": (
-            f"refusing to sync: primary checkout is on {head.strip()!r}, not {BASE_BRANCH!r}"
-        )}
+        return {
+            "ok": False,
+            "error": (
+                f"refusing to sync: primary checkout is on {head.strip()!r}, not {BASE_BRANCH!r}"
+            ),
+        }
 
     remote = await _upstream_remote()
 
@@ -2591,10 +2808,13 @@ async def _sync_start_locked() -> dict:
     # restart (observed live: gateway silently became the main repo's code).
     target_py = _venv_python(MAIN_REPO)
     if target_py is None:
-        return {"ok": False, "error": (
-            "main checkout has no .venv — provision it first "
-            f"(expected under {Path(MAIN_REPO) / '.venv'})"
-        )}
+        return {
+            "ok": False,
+            "error": (
+                "main checkout has no .venv — provision it first "
+                f"(expected under {Path(MAIN_REPO) / '.venv'})"
+            ),
+        }
     # Both binary lookups stat the filesystem (`_trusted_bin` walks the trusted
     # dirs; `_toolchain_bin` adds a `shutil.which` over the node bin dirs, which
     # may be NFS-backed). Resolve them together on the executor so /api/sync
@@ -2605,9 +2825,7 @@ async def _sync_start_locked() -> dict:
         lambda: (_trusted_bin("git"), _toolchain_bin("npm")),
     )
     if git_bin is None:
-        return {"ok": False, "error": (
-            f"no trusted executable for 'git' in {_TRUSTED_PATH}"
-        )}
+        return {"ok": False, "error": (f"no trusted executable for 'git' in {_TRUSTED_PATH}")}
     if npm_bin is None:
         # Drop the memoized resolution so the remedy this message advertises
         # actually works. `node_bin_dirs()` is lru_cached and `_BUILD_PATH_CACHE`
@@ -2617,22 +2835,39 @@ async def _sync_start_locked() -> dict:
         # makes the retry fresh. Only on failure: a successful resolution is
         # worth keeping cached, and this path is user-initiated, not a loop.
         _invalidate_toolchain_cache()
-        return {"ok": False, "error": (
-            "npm not found. Kiro Crew looks for a Node toolchain in "
-            "<data-home>/node-bin-dir (written by ensure-node.sh), then in "
-            "mise / asdf / nvm / fnm / volta install dirs, then in "
-            f"{_TRUSTED_PATH}. Fix: run `bash ensure-node.sh` in the main "
-            "checkout and press Pull + build again — no restart needed. To point "
-            "at a toolchain by hand instead, set "
-            "KIROCREW_NODE_BIN_DIR=/abs/path/to/node/bin in the gateway's "
-            "service environment; that one does need a restart, because a "
-            "running process cannot see a new environment variable."
-        )}
+        return {
+            "ok": False,
+            "error": (
+                "npm not found. Kiro Crew looks for a Node toolchain in "
+                "<data-home>/node-bin-dir (written by ensure-node.sh), then in "
+                "mise / asdf / nvm / fnm / volta install dirs, then in "
+                f"{_TRUSTED_PATH}. Fix: run `bash ensure-node.sh` in the main "
+                "checkout and press Pull + build again — no restart needed. To point "
+                "at a toolchain by hand instead, set "
+                "KIROCREW_NODE_BIN_DIR=/abs/path/to/node/bin in the gateway's "
+                "service environment; that one does need a restart, because a "
+                "running process cannot see a new environment variable."
+            ),
+        }
     raw_steps: list[tuple[list[str], str, dict, str]] = [
-        ([git_bin, "fetch", remote, BASE_BRANCH], "standard",
-         _build_env(with_credentials=True), "Pull"),
-        ([git_bin, "merge", "--ff-only", f"{remote}/{BASE_BRANCH}"], "strict", _build_env(), "Pull"),
-        ([str(target_py), "-m", "pip", "install", "-e", "."], "strict", _build_env(), "pip install"),
+        (
+            [git_bin, "fetch", remote, BASE_BRANCH],
+            "standard",
+            _build_env(with_credentials=True),
+            "Pull",
+        ),
+        (
+            [git_bin, "merge", "--ff-only", f"{remote}/{BASE_BRANCH}"],
+            "strict",
+            _build_env(),
+            "Pull",
+        ),
+        (
+            [str(target_py), "-m", "pip", "install", "-e", "."],
+            "strict",
+            _build_env(),
+            "pip install",
+        ),
     ]
     # The whole FRONTEND half of the sync is skipped on an edition checkout.
     #
@@ -2677,11 +2912,19 @@ async def _sync_start_locked() -> dict:
             # carrying build_and_stage, turning an older target into an
             # ImportError that fails the whole Pull+Build. The repo to build and
             # npm's resolved trusted path are passed in rather than re-resolved.
-            ([sys.executable, "-c",
-              "import sys;from kiro_crew.frontend import build_and_stage;"
-              "sys.exit(0 if build_and_stage(sys.argv[1], npm=sys.argv[2]) else 1)",
-              MAIN_REPO, npm_bin],
-             "strict", _build_env(), "npm build + stage"),
+            (
+                [
+                    sys.executable,
+                    "-c",
+                    "import sys;from kiro_crew.frontend import build_and_stage;"
+                    "sys.exit(0 if build_and_stage(sys.argv[1], npm=sys.argv[2]) else 1)",
+                    MAIN_REPO,
+                    npm_bin,
+                ],
+                "strict",
+                _build_env(),
+                "npm build + stage",
+            ),
         ]
     cleanups: list[str] = []
     wrapped_steps: list[dict] = []
@@ -2747,7 +2990,8 @@ async def _rebase_locked(target: dict) -> dict:
         return {"ok": False, "error": f"git fetch {remote} {BASE_BRANCH} failed"}
     rc, stdout, stderr = await _run_cmd(
         ["git", "-C", path, "rebase", f"{remote}/{BASE_BRANCH}"],
-        timeout=180, mode="strict",
+        timeout=180,
+        mode="strict",
     )
     if rc == 0:
         g = await _git_info(path)
@@ -2758,7 +3002,8 @@ async def _rebase_locked(target: dict) -> dict:
         # Abort itself failed/timed out — the worktree is still mid-rebase.
         # Never report "aborted" when it is not; manual recovery required.
         return {
-            "ok": False, "conflict": True,
+            "ok": False,
+            "conflict": True,
             "error": (
                 "rebase conflict AND `git rebase --abort` failed — worktree "
                 f"is still mid-rebase; manual recovery required. {tail}"
@@ -2772,8 +3017,12 @@ async def _rebase_locked(target: dict) -> dict:
 # top-level ``running``/``total``/``done``/``current``/``results`` fields are
 # kept for backward compatibility (auto-prune reaper + any existing consumers).
 _PRUNE_STATE: dict = {
-    "running": False, "total": 0, "done": 0, "current": None,
-    "results": [], "items": {},
+    "running": False,
+    "total": 0,
+    "done": 0,
+    "current": None,
+    "results": [],
+    "items": {},
 }
 _PRUNE_LOCK = asyncio.Lock()
 # Cap on concurrent per-item prune phases (fresh gh verdict + pod shutdown).
@@ -2852,11 +3101,16 @@ async def _prune_run(names: list[str]) -> dict:
     async with _PRUNE_LOCK:
         if _PRUNE_STATE["running"]:
             return {"ok": False, "error": "prune already running"}
-        _PRUNE_STATE.update({
-            "running": True, "total": len(names), "done": 0, "current": None,
-            "results": [],
-            "items": {nm: {"status": "pending", "error": None} for nm in names},
-        })
+        _PRUNE_STATE.update(
+            {
+                "running": True,
+                "total": len(names),
+                "done": 0,
+                "current": None,
+                "results": [],
+                "items": {nm: {"status": "pending", "error": None} for nm in names},
+            }
+        )
 
     items = _PRUNE_STATE["items"]
     sem = asyncio.Semaphore(_PRUNE_CONCURRENCY)
@@ -2895,11 +3149,14 @@ async def _prune_run(names: list[str]) -> dict:
                         error = f"not prunable: {verdict.get('code', 'unknown')}"
                         result = {"name": nm, "ok": False, "error": error}
                     else:
+
                         def _progress(phase: str, _nm: str = nm) -> None:
                             # phase in {"stopping_pod", "removing"}
                             items[_nm]["status"] = phase
 
-                        res = await _worktree_remove(nm, force=False, progress=_progress)
+                        res = await _worktree_remove(
+                            nm, force=False, progress=_progress, _caller="prune"
+                        )
                         result = {"name": nm, **res}
                         if res.get("ok"):
                             status, error = "done", None
@@ -2921,9 +3178,7 @@ async def _prune_run(names: list[str]) -> dict:
 
     async def _work() -> None:
         try:
-            await asyncio.gather(
-                *(_prune_one(nm) for nm in names), return_exceptions=True
-            )
+            await asyncio.gather(*(_prune_one(nm) for nm in names), return_exceptions=True)
         finally:
             _PRUNE_STATE["running"] = False
             _PRUNE_STATE["current"] = None
@@ -3030,7 +3285,7 @@ async def _auto_prune_once() -> dict:
         if not name or row.get("code") != "merged":
             continue
         try:
-            res = await _worktree_remove(name, force=False)
+            res = await _worktree_remove(name, force=False, _caller="reaper")
         except Exception as exc:  # noqa: BLE001
             res = {"ok": False, "error": _redact(str(exc))}
         if res.get("ok"):
@@ -3056,12 +3311,17 @@ async def _auto_prune_reaper() -> None:
                 had_error = bool(res["failed"] or res.get("error"))
                 if res["removed"] or had_error:
                     _sel().log_tool_invocation(
-                        session_key="api", source="api",
-                        tool_name="dev_fleet_auto_prune", tool_kind="dev_fleet",
+                        session_key="api",
+                        source="api",
+                        tool_name="dev_fleet_auto_prune",
+                        tool_kind="dev_fleet",
                         outcome="failure" if had_error else "success",
                         resources=_redact(",".join(res["removed"])),
-                        error="" if not had_error
-                        else _redact(res.get("error") or str(res["failed"]))[:200],
+                        error=(
+                            ""
+                            if not had_error
+                            else _redact(res.get("error") or str(res["failed"]))[:200]
+                        ),
                     )
             except Exception:  # noqa: BLE001
                 logger.exception("dev-fleet auto-prune reaper cycle failed")
@@ -3071,6 +3331,7 @@ async def _auto_prune_reaper() -> None:
 # =============================================================================
 # aiohttp route handlers
 # =============================================================================
+
 
 async def api_dev_fleet_fleet(request: web.Request) -> web.Response:
     fresh = request.query.get("fresh") == "1"
@@ -3136,6 +3397,7 @@ def _sel():
     """Structured audit-log sink. In standalone backend context, imports
     kiro_crew.sel directly (no _handlers_pkg indirection needed)."""
     from kiro_crew.sel import sel as _sel_singleton
+
     return _sel_singleton()
 
 
@@ -3147,6 +3409,7 @@ def _audited(tool_name: str):
     worktree name is read from the JSON body without consuming the stream
     (handlers re-parse independently); values are redacted before logging.
     """
+
     def _decorate(handler):
         async def _wrapped(request: web.Request) -> web.Response:
             target = ""
@@ -3169,9 +3432,14 @@ def _audited(tool_name: str):
                 resp = await handler(request)
             except Exception as exc:
                 _sel().log_tool_invocation(
-                    session_key="api", source="api", tool_name=tool_name,
-                    tool_kind="dev_fleet", outcome="failure",
-                    resources=_redact(target), error=type(exc).__name__)
+                    session_key="api",
+                    source="api",
+                    tool_name=tool_name,
+                    tool_kind="dev_fleet",
+                    outcome="failure",
+                    resources=_redact(target),
+                    error=type(exc).__name__,
+                )
                 raise
             try:
                 payload = json.loads(resp.text or "{}")
@@ -3193,13 +3461,20 @@ def _audited(tool_name: str):
             if outcome != "success":
                 err = _redact(str(payload.get("error", "")))[:200] or f"http_{resp.status}"
             _sel().log_tool_invocation(
-                session_key="api", source="api", tool_name=tool_name,
-                tool_kind="dev_fleet", outcome=outcome,
-                resources=_redact(target), error=err)
+                session_key="api",
+                source="api",
+                tool_name=tool_name,
+                tool_kind="dev_fleet",
+                outcome=outcome,
+                resources=_redact(target),
+                error=err,
+            )
             return resp
+
         _wrapped.__name__ = handler.__name__
         _wrapped.__doc__ = handler.__doc__
         return _wrapped
+
     return _decorate
 
 
@@ -3363,6 +3638,7 @@ async def dev_fleet_cleanup(app: web.Application) -> None:
 # HMAC Proxy Middleware (fail-closed)
 # =============================================================================
 
+
 @web.middleware
 async def hmac_proxy_middleware(request: web.Request, handler) -> web.Response:
     """Verify X-KiroCrew-Proxy HMAC on every request except /health.
@@ -3379,9 +3655,12 @@ async def hmac_proxy_middleware(request: web.Request, handler) -> web.Response:
         # HMAC denial is a permission decision like any handler outcome.
         try:
             _sel().log_tool_invocation(
-                session_key="api", source="api",
-                tool_name="dev-fleet:proxy-hmac", tool_kind="dev_fleet",
-                outcome="denied", resources=f"{request.method} {request.path}",
+                session_key="api",
+                source="api",
+                tool_name="dev-fleet:proxy-hmac",
+                tool_kind="dev_fleet",
+                outcome="denied",
+                resources=f"{request.method} {request.path}",
                 error=reason,
             )
         except Exception:  # noqa: BLE001 — auditing must never mask the 401
@@ -3432,6 +3711,7 @@ async def hmac_proxy_middleware(request: web.Request, handler) -> web.Response:
 # =============================================================================
 # Health endpoint
 # =============================================================================
+
 
 async def api_health(request: web.Request) -> web.Response:
     # Served at BOTH /health (HMAC-exempt, gateway-internal liveness poll) and
@@ -3571,7 +3851,10 @@ async def _gateway_service_active() -> bool:
     """
     global _GATEWAY_SERVICE_ACTIVE, _GATEWAY_SERVICE_CHECK_AT
     now = time.monotonic()
-    if _GATEWAY_SERVICE_ACTIVE is not None and (now - _GATEWAY_SERVICE_CHECK_AT) < _GATEWAY_SERVICE_TTL:
+    if (
+        _GATEWAY_SERVICE_ACTIVE is not None
+        and (now - _GATEWAY_SERVICE_CHECK_AT) < _GATEWAY_SERVICE_TTL
+    ):
         return _GATEWAY_SERVICE_ACTIVE
     svc = _gateway_backend()
     _GATEWAY_SERVICE_ACTIVE = False if svc is None else await svc.active()
@@ -3737,9 +4020,7 @@ def _dropin_content(worktree: Path, kcbin: Path) -> str:
     path rejected) rather than silently splitting/expanding the directive."""
     venv_bin = worktree / ".venv" / "bin"
     local_bin = Path.home() / ".local" / "bin"
-    path_env = ":".join(
-        [str(venv_bin), str(local_bin), "/usr/local/bin", "/usr/bin", "/bin"]
-    )
+    path_env = ":".join([str(venv_bin), str(local_bin), "/usr/local/bin", "/usr/bin", "/bin"])
     return (
         "[Service]\n"
         f"WorkingDirectory={_sd_value(str(worktree))}\n"
@@ -3909,8 +4190,9 @@ def _manual_restart_command() -> str:
     return "kirocrew restart"
 
 
-def _make_live_plan(worktree: Path, kcbin: Path, *,
-                    svc: "gateway_service.GatewayServiceBackend | None") -> dict:
+def _make_live_plan(
+    worktree: Path, kcbin: Path, *, svc: "gateway_service.GatewayServiceBackend | None"
+) -> dict:
     """Describe — without mutating anything — what making *worktree* live does.
 
     Validates the target the same way the real cutover does, so a dry run
@@ -3957,31 +4239,46 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
     # the restart is still pending, so refuse up-front (before any validation or
     # dry_run plan) — any further mutation would race the pending restart.
     if _MAKE_LIVE_COMMITTED:
-        return {"ok": False, "code": "restart_pending", "error": (
-            "a cutover has been scheduled; the gateway is restarting — "
-            "retry after it comes back"
-        )}
+        return {
+            "ok": False,
+            "code": "restart_pending",
+            "error": (
+                "a cutover has been scheduled; the gateway is restarting — "
+                "retry after it comes back"
+            ),
+        }
     target, err = await _find_worktree_by_path(path)
     if target is None:
         return {"ok": False, "code": "unknown_path", "error": err}
     real = Path(target["path"])
     if not real.exists():
-        return {"ok": False, "code": "missing_path",
-                "error": f"worktree path no longer exists: {real}"}
+        return {
+            "ok": False,
+            "code": "missing_path",
+            "error": f"worktree path no longer exists: {real}",
+        }
 
     pod = _in_pod()
     if pod is None:
-        return {"ok": False, "code": "pod_indeterminate", "error": (
-            "cannot determine whether this backend runs inside a pod (config "
-            "home unresolvable) — refusing make-live to avoid repointing the "
-            "live gateway from an unattributable plane"
-        )}
+        return {
+            "ok": False,
+            "code": "pod_indeterminate",
+            "error": (
+                "cannot determine whether this backend runs inside a pod (config "
+                "home unresolvable) — refusing make-live to avoid repointing the "
+                "live gateway from an unattributable plane"
+            ),
+        }
     if pod:
-        return {"ok": False, "code": "pod", "error": (
-            "refusing make-live from inside a pod — a pod is a throwaway test "
-            "instance and must never repoint the real live gateway "
-            "(run this from the live dashboard)"
-        )}
+        return {
+            "ok": False,
+            "code": "pod",
+            "error": (
+                "refusing make-live from inside a pod — a pod is a throwaway test "
+                "instance and must never repoint the real live gateway "
+                "(run this from the live dashboard)"
+            ),
+        }
 
     # The live target is a POINTER the gateway resolves at startup, not an edit
     # to this host's service definition — so staging never needs the service
@@ -4001,8 +4298,11 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
         # EVERY host. This guard sits before the cancel below so that a drivable
         # host cannot turn a harmless repeat click into a real gateway restart by
         # falling through to the cutover path.
-        return {"ok": False, "code": "already_live",
-                "error": f"{real.name} is already the live gateway"}
+        return {
+            "ok": False,
+            "code": "already_live",
+            "error": f"{real.name} is already the live gateway",
+        }
     if same_as_running and not can_restart:
         # Pointing at the checkout already running is normally a no-op — EXCEPT
         # while a cutover is staged, where it is the operator cancelling it. The
@@ -4026,8 +4326,11 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
             # Defensive re-read: the check above and this one straddle no await,
             # but keeping it means the cancel never builds a plan around a stage
             # that has since disappeared.
-            return {"ok": False, "code": "already_live",
-                    "error": f"{real.name} is already the live gateway"}
+            return {
+                "ok": False,
+                "code": "already_live",
+                "error": f"{real.name} is already the live gateway",
+            }
         cancel_plan = {
             "action": "cancel_staged_cutover",
             "staged_target": pending_target,
@@ -4041,22 +4344,31 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
         if dry_run:
             return {"ok": True, "dry_run": True, "plan": cancel_plan}
         if _MAKE_LIVE_LOCK.locked():
-            return {"ok": False, "code": "busy", "error": (
-                "another make-live cutover is in progress"
-            )}
+            return {
+                "ok": False,
+                "code": "busy",
+                "error": ("another make-live cutover is in progress"),
+            }
         async with _MAKE_LIVE_LOCK:
             if _MAKE_LIVE_COMMITTED:
-                return {"ok": False, "code": "restart_pending", "error": (
-                    "a cutover has been scheduled; the gateway is restarting — "
-                    "retry after it comes back"
-                )}
+                return {
+                    "ok": False,
+                    "code": "restart_pending",
+                    "error": (
+                        "a cutover has been scheduled; the gateway is restarting — "
+                        "retry after it comes back"
+                    ),
+                }
             # Re-read under the lock: the awaits above mean the stage may have
             # been completed or re-pointed since the entry check, and cancelling
             # a stage that no longer exists would delete a pointer someone else
             # just wrote.
             if _staged_target() is None:
-                return {"ok": False, "code": "already_live",
-                        "error": f"{real.name} is already the live gateway"}
+                return {
+                    "ok": False,
+                    "code": "already_live",
+                    "error": f"{real.name} is already the live gateway",
+                }
             # Re-pin the RUNNING checkout rather than deleting the pointer.
             # Deleting only means "stay here" when the running image is the
             # installed build; if this checkout was itself selected by an earlier
@@ -4070,15 +4382,17 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
                     subprocess_executor(), live_target.snapshot
                 )
             except (OSError, ValueError) as exc:
-                return {"ok": False, "code": "write_failed", "error": (
-                    "refusing to cancel the staged cutover: the staged pointer "
-                    "exists but could not be read, so a failed cancel could not "
-                    f"be rolled back: {_redact(str(exc))}"
-                )}
+                return {
+                    "ok": False,
+                    "code": "write_failed",
+                    "error": (
+                        "refusing to cancel the staged cutover: the staged pointer "
+                        "exists but could not be read, so a failed cancel could not "
+                        f"be rolled back: {_redact(str(exc))}"
+                    ),
+                }
             try:
-                await loop.run_in_executor(
-                    subprocess_executor(), live_target.write_target, real
-                )
+                await loop.run_in_executor(subprocess_executor(), live_target.write_target, real)
             except (live_target.InvalidTarget, OSError) as exc:
                 # InvalidTarget refuses before anything is written. OSError can
                 # arrive AFTER the pointer has been replaced, because
@@ -4093,24 +4407,36 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
                     rolled_back = await loop.run_in_executor(
                         subprocess_executor(), live_target.restore, prior_pointer
                     )
-                detail = "" if rolled_back else (
-                    " The rollback also failed, so the pointer may name the "
-                    "running checkout without owner-only permissions — check it "
-                    "before the next restart."
+                detail = (
+                    ""
+                    if rolled_back
+                    else (
+                        " The rollback also failed, so the pointer may name the "
+                        "running checkout without owner-only permissions — check it "
+                        "before the next restart."
+                    )
                 )
-                return {"ok": False, "code": "write_failed", "error": (
-                    "refusing to cancel the staged cutover: the running "
-                    "checkout could not be re-pinned as the live target: "
-                    f"{_redact(str(exc))}.{detail}"
-                )}
+                return {
+                    "ok": False,
+                    "code": "write_failed",
+                    "error": (
+                        "refusing to cancel the staged cutover: the running "
+                        "checkout could not be re-pinned as the live target: "
+                        f"{_redact(str(exc))}.{detail}"
+                    ),
+                }
             _LIVE_WORKTREE = None
             _LIVE_CHECK_AT = 0.0
-            return {"ok": True, "cancelled": True, "target": str(real),
-                    "plan": cancel_plan,
-                    "notice": (
-                        f"Staged cutover cancelled. {real.name} stays the live "
-                        f"target and no restart is needed."
-                    )}
+            return {
+                "ok": True,
+                "cancelled": True,
+                "target": str(real),
+                "plan": cancel_plan,
+                "notice": (
+                    f"Staged cutover cancelled. {real.name} stays the live "
+                    f"target and no restart is needed."
+                ),
+            }
     if same_as_running:
         # Drivable host with a stage pending. The pointer-only cancel above is
         # unsafe here (it would leave the service definition naming the staged
@@ -4121,51 +4447,75 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
         # worse than doing nothing.
         pending = _staged_target()
         pending_name = Path(pending).name if pending else "another checkout"
-        return {"ok": False, "code": "staged_cutover_pending", "error": (
-            f"a cutover to {pending_name} is already staged. Dev Fleet can "
-            f"restart this host, so cancelling by re-pointing here would leave "
-            f"the service definition naming {pending_name}. Make {pending_name} "
-            f"live to complete the cutover, or restart the gateway to apply it."
-        )}
+        return {
+            "ok": False,
+            "code": "staged_cutover_pending",
+            "error": (
+                f"a cutover to {pending_name} is already staged. Dev Fleet can "
+                f"restart this host, so cancelling by re-pointing here would leave "
+                f"the service definition naming {pending_name}. Make {pending_name} "
+                f"live to complete the cutover, or restart the gateway to apply it."
+            ),
+        }
 
     kcbin = real / ".venv" / "bin" / "kirocrew"
     if not kcbin.is_file():
-        return {"ok": False, "code": "missing_venv", "error": (
-            f"{real.name} has no .venv/bin/kirocrew — Provision it first "
-            "(row menu \u2192 Provision) before making it live"
-        )}
+        return {
+            "ok": False,
+            "code": "missing_venv",
+            "error": (
+                f"{real.name} has no .venv/bin/kirocrew — Provision it first "
+                "(row menu \u2192 Provision) before making it live"
+            ),
+        }
     # A present-but-non-executable binary is worse than a missing one: the
     # drop-in gets written and the old gateway is stopped, but the replacement
     # can never start (systemd ExecStart requires +x) — leaving NO gateway
     # running. Gate on the exec bit with a DISTINCT, actionable code.
     if not os.access(kcbin, os.X_OK):
-        return {"ok": False, "code": "venv_not_executable", "error": (
-            f"{real.name} has a non-executable .venv/bin/kirocrew — run "
-            "`chmod +x` on it or re-Provision the worktree before making it "
-            "live (a non-executable binary stops the live gateway but cannot "
-            "start the replacement, leaving no gateway running)"
-        )}
+        return {
+            "ok": False,
+            "code": "venv_not_executable",
+            "error": (
+                f"{real.name} has a non-executable .venv/bin/kirocrew — run "
+                "`chmod +x` on it or re-Provision the worktree before making it "
+                "live (a non-executable binary stops the live gateway but cannot "
+                "start the replacement, leaving no gateway running)"
+            ),
+        }
     dist_index = real / "src" / "kiro_crew" / "static" / "dist" / "index.html"
     if not dist_index.is_file():
-        return {"ok": False, "code": "missing_dist", "error": (
-            f"{real.name} has no built dashboard "
-            "(src/kiro_crew/static/dist/index.html) — run Pull+Build first; "
-            "cutover without a built dist serves a broken dashboard"
-        )}
+        return {
+            "ok": False,
+            "code": "missing_dist",
+            "error": (
+                f"{real.name} has no built dashboard "
+                "(src/kiro_crew/static/dist/index.html) — run Pull+Build first; "
+                "cutover without a built dist serves a broken dashboard"
+            ),
+        }
 
     try:
         plan = _make_live_plan(real, kcbin, svc=svc if can_restart else None)
     except live_target.InvalidTarget as exc:
-        return {"ok": False, "code": "unsafe_path", "error": (
-            "refusing make-live: the worktree path cannot be used as a live "
-            f"target: {_redact(str(exc))}"
-        )}
+        return {
+            "ok": False,
+            "code": "unsafe_path",
+            "error": (
+                "refusing make-live: the worktree path cannot be used as a live "
+                f"target: {_redact(str(exc))}"
+            ),
+        }
     except gateway_service._UnsafeTargetValue as exc:
-        return {"ok": False, "code": "unsafe_path", "error": (
-            "refusing make-live: the worktree path is not safely representable "
-            "in a service definition (contains control characters): "
-            f"{_redact(str(exc))}"
-        )}
+        return {
+            "ok": False,
+            "code": "unsafe_path",
+            "error": (
+                "refusing make-live: the worktree path is not safely representable "
+                "in a service definition (contains control characters): "
+                f"{_redact(str(exc))}"
+            ),
+        }
     plan["target"] = str(real)
     if dry_run:
         return {"ok": True, "dry_run": True, "plan": plan}
@@ -4179,9 +4529,7 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
     # acquire are atomic here (no ``await`` between them on the single-threaded
     # event loop), so the busy response cannot itself race the lock.
     if _MAKE_LIVE_LOCK.locked():
-        return {"ok": False, "code": "busy", "error": (
-            "another make-live cutover is in progress"
-        )}
+        return {"ok": False, "code": "busy", "error": ("another make-live cutover is in progress")}
     async with _MAKE_LIVE_LOCK:
         # Re-check the committed latch now that we hold the lock. A request
         # that passed the entry check just before the WINNING cutover latched
@@ -4189,10 +4537,14 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
         # otherwise fall through here and mutate the drop-in a second time while
         # the winner's restart is already tearing us down.
         if _MAKE_LIVE_COMMITTED:
-            return {"ok": False, "code": "restart_pending", "error": (
-                "a cutover has been scheduled; the gateway is restarting — "
-                "retry after it comes back"
-            )}
+            return {
+                "ok": False,
+                "code": "restart_pending",
+                "error": (
+                    "a cutover has been scheduled; the gateway is restarting — "
+                    "retry after it comes back"
+                ),
+            }
         # Snapshot the prior live target BEFORE staging so a failed cutover can
         # be rolled back — a persisted pointer would otherwise silently activate
         # on the NEXT unrelated restart. Staging itself is atomic (temp file +
@@ -4209,11 +4561,15 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
             # ValueError covers an undecodable pointer: it exists, so rollback
             # cannot treat it as absent (that DELETES it), and the cutover is
             # refused rather than made unreversible.
-            return {"ok": False, "code": "write_failed", "error": (
-                "refusing make-live: the current live target exists but "
-                f"could not be read, so a failed cutover could not be rolled "
-                f"back: {_redact(str(exc))}"
-            )}
+            return {
+                "ok": False,
+                "code": "write_failed",
+                "error": (
+                    "refusing make-live: the current live target exists but "
+                    f"could not be read, so a failed cutover could not be rolled "
+                    f"back: {_redact(str(exc))}"
+                ),
+            }
         # A drivable service may ALSO carry staging from an earlier cutover whose
         # definition names a worktree directly. Leaving that definition pinned to
         # a stale checkout is a live landmine: once that worktree is pruned the
@@ -4227,11 +4583,15 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
             try:
                 prior_definition = svc.snapshot()
             except OSError as exc:
-                return {"ok": False, "code": "write_failed", "error": (
-                    "refusing make-live: the current service definition exists "
-                    "but could not be read, so a failed cutover could not be "
-                    f"rolled back: {_redact(str(exc))}"
-                )}
+                return {
+                    "ok": False,
+                    "code": "write_failed",
+                    "error": (
+                        "refusing make-live: the current service definition exists "
+                        "but could not be read, so a failed cutover could not be "
+                        f"rolled back: {_redact(str(exc))}"
+                    ),
+                }
 
         def _unwind_sync() -> bool:
             """Restore both staged surfaces. False when either did not land."""
@@ -4255,15 +4615,16 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
             # on Windows. Run it off the loop so a cutover cannot stall every
             # other gateway request for the duration of that subprocess.
             loop = asyncio.get_running_loop()
-            await loop.run_in_executor(
-                subprocess_executor(), live_target.write_target, real
-            )
+            await loop.run_in_executor(subprocess_executor(), live_target.write_target, real)
         except live_target.InvalidTarget as exc:
             return {"ok": False, "code": "unsafe_path", "error": _redact(str(exc))}
         except OSError as exc:
-            return {"ok": False, "code": "write_failed",
-                    "rolled_back": await _unwind(),
-                    "error": _redact(str(exc))}
+            return {
+                "ok": False,
+                "code": "write_failed",
+                "rolled_back": await _unwind(),
+                "error": _redact(str(exc)),
+            }
 
         # Nothing bounces the gateway on this host, so the cutover is STAGED and
         # the operator finishes it. Reported as a success with the exact command,
@@ -4274,10 +4635,15 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
         if not can_restart:
             _LIVE_WORKTREE = None
             _LIVE_CHECK_AT = 0.0
-            return {"ok": True, "cutover": True, "staged_only": True,
-                    "target": str(real), "plan": plan,
-                    "manual_restart": _manual_restart_command(),
-                    "notice": _staged_notice(real.name, unit_status)}
+            return {
+                "ok": True,
+                "cutover": True,
+                "staged_only": True,
+                "target": str(real),
+                "plan": plan,
+                "manual_restart": _manual_restart_command(),
+                "notice": _staged_notice(real.name, unit_status),
+            }
         assert svc is not None  # can_restart implies a backend
 
         staged, code, err = await svc.stage(real, kcbin)
@@ -4286,8 +4652,7 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
             # Re-read definitions so the loaded config matches the restored disk
             # state rather than the rejected override.
             await svc.reload()
-            return {"ok": False, "code": code, "rolled_back": rolled_back,
-                    "error": _redact(err)}
+            return {"ok": False, "code": code, "rolled_back": rolled_back, "error": _redact(err)}
 
         # The restart tears down THIS backend with the gateway, so it is handed
         # to the service manager to perform (systemd-run on Linux, launchd's
@@ -4301,8 +4666,12 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
         if not restarted:
             rolled_back = await _unwind()
             await svc.reload()
-            return {"ok": False, "code": "restart_failed", "rolled_back": rolled_back,
-                    "error": _redact(err)}
+            return {
+                "ok": False,
+                "code": "restart_failed",
+                "rolled_back": rolled_back,
+                "error": _redact(err),
+            }
 
         # COMMITTED: the restart is scheduled (the call returns before it
         # lands). Latch process-locally BEFORE returning so no further cutover
@@ -4315,8 +4684,13 @@ async def _make_live(path: str, dry_run: bool = False) -> dict:
         _LIVE_WORKTREE = None
         _LIVE_CHECK_AT = 0.0
 
-        return {"ok": True, "cutover": True, "target": str(real),
-                "plan": plan, "start_id": start_id}
+        return {
+            "ok": True,
+            "cutover": True,
+            "target": str(real),
+            "plan": plan,
+            "start_id": start_id,
+        }
 
 
 @_audited("dev_fleet_make_live")
@@ -4327,9 +4701,7 @@ async def api_dev_fleet_make_live(request: web.Request) -> web.Response:
     assert body is not None
     path = body.get("path")
     if not isinstance(path, str) or not path:
-        return web.json_response(
-            {"error": "'path' must be a non-empty string"}, status=400
-        )
+        return web.json_response({"error": "'path' must be a non-empty string"}, status=400)
     dry_run = body.get("dry_run")
     if dry_run is not None and not isinstance(dry_run, bool):
         return web.json_response({"error": "dry_run must be a boolean"}, status=400)
@@ -4339,6 +4711,7 @@ async def api_dev_fleet_make_live(request: web.Request) -> web.Response:
 # =============================================================================
 # Application factory and main
 # =============================================================================
+
 
 def create_app() -> web.Application:
     """Build the aiohttp Application with all routes and lifecycle hooks."""
