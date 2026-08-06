@@ -23,6 +23,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.repository == 'kirodotdev/KiroCrew'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
