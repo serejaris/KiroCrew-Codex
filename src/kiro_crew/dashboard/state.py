@@ -3065,12 +3065,16 @@ class DashboardState:
             # dashboard-only session whose replies never reach the thread.
             #
             # Only ever adopts a key the session map actually holds, so a slot
-            # whose name merely looks channel-shaped stays unbound.
+            # whose name merely looks channel-shaped stays unbound. Validated the
+            # same way ``surface_channel_session`` validates its own argument:
+            # only a real channel key may become a binding, so a malformed map
+            # answer leaves the slot unbound (a supported state) rather than
+            # routing the user's replies to a session no channel reads.
             from kiro_crew.messaging.link import is_channel_session_key
 
             if is_channel_session_key(name):
                 resolved = self.sessions.channel_key_for_stem(name)
-                if resolved:
+                if isinstance(resolved, str) and is_channel_session_key(resolved):
                     slot.linked_session_key = resolved
         try:
             if self.sessions:
