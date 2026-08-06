@@ -1,5 +1,9 @@
 # Governance
 
+This file governs the unofficial `serejaris/KiroCrew-Codex` community fork.
+Upstream KiroCrew has its own maintainers and governance in
+[`kirodotdev/KiroCrew`](https://github.com/kirodotdev/KiroCrew).
+
 This document covers who makes decisions in Kiro Crew, how those decisions get made, and how someone becomes one of the people making them. [CONTRIBUTING.md](CONTRIBUTING.md) covers how to contribute, and the two are meant to be read together.
 
 ## Who decides

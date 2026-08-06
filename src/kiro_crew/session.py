@@ -24,6 +24,8 @@ any queued or agentic work on it — continues without a user nudge:
   is dropped to avoid false-resume from stale state). A recycle is never
   forced through a live turn — if the turn semaphore cannot be acquired,
   the attempt is skipped and re-triggered at the next turn end.
+* **Codex App Server:** call ``thread/compact/start`` for the current native
+  thread and wait for its completion notification.
 * **claude-agent-acp:** run ``/compact`` in place under the session
   semaphore. The SDK preserves the same session ID across the
   compact_boundary; the session keeps its summary and continues without
@@ -159,6 +161,39 @@ def _is_claude_backend(provider: Any) -> bool:
         return False
     backend = getattr(provider.client, "backend", "")
     return backend == "claude"
+
+
+def _provider_label(provider: LLMProvider) -> str:
+    """Return the stable persistence label for any provider implementation."""
+
+    explicit = getattr(provider, "provider_id", "")
+    if isinstance(explicit, str) and explicit:
+        return explicit
+    if _is_claude_backend(provider) or (
+        ClaudeCodeProvider is not None and isinstance(provider, ClaudeCodeProvider)
+    ):
+        return "claude_code"
+    return "acp"
+
+
+def _provider_resumed(provider: LLMProvider) -> bool:
+    resumed = getattr(provider, "resumed", None)
+    return resumed if isinstance(resumed, bool) else False
+
+
+def _provider_session_id(provider: LLMProvider) -> str:
+    """Return a real native session id, rejecting mock/non-string attributes."""
+
+    value = getattr(provider, "session_id", "")
+    return value if isinstance(value, str) else ""
+
+
+def _set_provider_resume_id(provider: LLMProvider, session_id: str) -> bool:
+    setter = getattr(provider, "set_resume_session_id", None)
+    if callable(setter) and not inspect.iscoroutinefunction(setter):
+        setter(session_id)
+        return True
+    return False
 
 
 def _provider_effectively_alive(provider: Any) -> bool:
@@ -591,6 +626,12 @@ class SessionManager:
         """Return the LLM provider for *key*, or ``None``."""
         sess = self._sessions.get(self._fold_key(key))
         return sess.provider if sess else None
+
+    @property
+    def configured_provider(self) -> str:
+        """Configured provider id used by dashboard prerequisite gates."""
+
+        return str(getattr(self._cfg.agent, "provider", "acp") or "acp")
 
     async def try_acquire(self, key: str) -> bool:
         """Atomically take *key*'s turn semaphore iff a session exists and is idle.
@@ -1785,6 +1826,9 @@ class SessionManager:
                 if model == "auto" and agent and agent != "kirocrew":
                     model = self._resolve_agent_model(agent)
                 model = model or "auto"
+            else:
+                model = str(getattr(sess.provider, "model", "") or "auto")
+                agent = str(getattr(sess.provider, "_agent", "") or "")
             # Human-readable name
             if key == BACKGROUND_KEY:
                 name = "Background (titles, cron, heartbeat)"
@@ -2041,19 +2085,14 @@ class SessionManager:
                         sess.last_used = time.monotonic()
                         was_new = sess.is_new
                         sess.is_new = False
-                        # Lazy-save CC session_id: init event fires after
-                        # registration, so the first get_or_create that finds
-                        # a live session with a populated session_id persists it.
-                        if (
-                            ClaudeCodeProvider is not None
-                            and isinstance(sess.provider, ClaudeCodeProvider)
-                            and sess.provider.session_id
-                            and not self._session_map.get(key)
-                        ):
+                        # Some providers only expose their native session id
+                        # after initialization. Persist it lazily once present.
+                        native_sid = _provider_session_id(sess.provider)
+                        if native_sid and not self._session_map.get(key):
                             self._session_map.set(
                                 key,
-                                sess.provider.session_id,
-                                provider="claude_code",
+                                native_sid,
+                                provider=_provider_label(sess.provider),
                                 cwd=sess.provider.cwd,
                             )
                         # Claim this session, but DON'T acquire its semaphore
@@ -2103,7 +2142,10 @@ class SessionManager:
         # it, so deferring past that short-circuit keeps per-agent resolution
         # (which globs + reads ``~/.kiro/agents/*.json``) off the hot path for
         # already-live sessions.
-        if model is None:
+        if model is None and self.configured_provider == "codex":
+            configured = getattr(self._cfg.agent, "model", "")
+            model = configured if configured and configured != "auto" else None
+        elif model is None:
             # KiroACP-only: the effective model is the kiro/ACP slot.
             #
             # Precedence: the KiroCrew agent's own model > the bound kiro
@@ -2257,10 +2299,7 @@ class SessionManager:
             # build_session_replay on the first prompt (provider_switch_replay flag).
             _provider_switched = False
             if resume_sid:
-                is_cc_now = (
-                    ClaudeCodeProvider is not None and isinstance(provider, ClaudeCodeProvider)
-                ) or _is_claude_backend(provider)
-                current_provider = "claude_code" if is_cc_now else "acp"
+                current_provider = _provider_label(provider)
                 if detect_provider_switch(self._session_map, key, current_provider):
                     resume_sid = None
                     _provider_switched = True
@@ -2269,17 +2308,13 @@ class SessionManager:
                     self._session_map.clear_sid(key)
 
             # Set resume ID before start() triggers _initialize_session
-            if resume_sid:
-                from kiro_crew.providers.acp import (
-                    AcpProvider,  # circular import: providers -> session
+            if resume_sid and _set_provider_resume_id(provider, resume_sid):
+                logger.info(
+                    "Attempting %s resume for %s (sid=%s)",
+                    _provider_label(provider),
+                    key,
+                    resume_sid,
                 )
-
-                if isinstance(provider, AcpProvider):
-                    provider.client.set_resume_session_id(resume_sid)
-                    logger.info("Attempting session/load for %s (sid=%s)", key, resume_sid)
-                elif ClaudeCodeProvider is not None and isinstance(provider, ClaudeCodeProvider):
-                    provider.set_resume_session_id(resume_sid)
-                    logger.info("CC resume for %s (sid=%s)", key, resume_sid)
             async with self._start_sem:
                 try:
                     await provider.start()
@@ -2310,11 +2345,8 @@ class SessionManager:
         _dup_provider: "LLMProvider | None" = None
         try:
             # Check if session was resumed
-            resumed = False
+            resumed = _provider_resumed(provider)
             from kiro_crew.providers.acp import AcpProvider  # circular import: providers -> session
-
-            if isinstance(provider, AcpProvider):
-                resumed = provider.client.resumed
 
             async with self._lock:
                 # Re-check: another coroutine may have created this key while we
@@ -2373,19 +2405,15 @@ class SessionManager:
 
                     # Save session mapping for long-lived sessions
                     _cwd_str = provider.cwd
-                    if not is_stateless and isinstance(provider, AcpProvider):
-                        sid = provider.client._session_id
-                        _prov_label = "claude_code" if _is_claude_backend(provider) else "acp"
+                    if not is_stateless:
+                        sid = _provider_session_id(provider)
                         if sid:
-                            self._session_map.set(key, sid, provider=_prov_label, cwd=_cwd_str)
-                    elif (
-                        not is_stateless
-                        and ClaudeCodeProvider is not None
-                        and isinstance(provider, ClaudeCodeProvider)
-                    ):
-                        sid = provider.session_id
-                        if sid:
-                            self._session_map.set(key, sid, provider="claude_code", cwd=_cwd_str)
+                            self._session_map.set(
+                                key,
+                                sid,
+                                provider=_provider_label(provider),
+                                cwd=_cwd_str,
+                            )
 
                     if self._cleanup_task is None or self._cleanup_task.done():
                         self._cleanup_task = asyncio.create_task(self._cleanup_loop())
@@ -3080,39 +3108,23 @@ class SessionManager:
 
         async with self._lock:
             # Save session mappings before killing processes
-            from kiro_crew.providers.acp import AcpProvider  # circular import: providers -> session
-
             for key, sess in self._sessions.items():
                 _cwd_str = sess.provider.cwd
-                if isinstance(sess.provider, AcpProvider):
-                    sid = sess.provider.client._session_id
-                    if (
-                        sid
-                        and key != BACKGROUND_KEY
-                        and (
-                            not any(key.startswith(p) for p in _STATELESS_PREFIXES)
-                            or self._is_continuable_key(key)
-                        )
-                    ):
-                        # Persist the provider label so detect_provider_switch
-                        # on next startup doesn't see a missing entry, default
-                        # to "acp", and falsely fire a switch for users still
-                        # on claude_code.
-                        _prov_label = "claude_code" if _is_claude_backend(sess.provider) else "acp"
-                        self._session_map.set(key, sid, provider=_prov_label, cwd=_cwd_str)
-                elif ClaudeCodeProvider is not None and isinstance(
-                    sess.provider, ClaudeCodeProvider
+                sid = _provider_session_id(sess.provider)
+                if (
+                    sid
+                    and key != BACKGROUND_KEY
+                    and (
+                        not any(key.startswith(p) for p in _STATELESS_PREFIXES)
+                        or self._is_continuable_key(key)
+                    )
                 ):
-                    sid = sess.provider.session_id
-                    if (
-                        sid
-                        and key != BACKGROUND_KEY
-                        and (
-                            not any(key.startswith(p) for p in _STATELESS_PREFIXES)
-                            or self._is_continuable_key(key)
-                        )
-                    ):
-                        self._session_map.set(key, sid, provider="claude_code", cwd=_cwd_str)
+                    self._session_map.set(
+                        key,
+                        sid,
+                        provider=_provider_label(sess.provider),
+                        cwd=_cwd_str,
+                    )
 
             sessions = dict(self._sessions)
             self._sessions.clear()

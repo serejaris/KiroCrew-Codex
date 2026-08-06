@@ -27,6 +27,7 @@ _real_receipt_secret = install_receipt.receipt_secret
 def _eligible_telemetry_host(monkeypatch):
     """Neutralize ambient CI/dev-home suppression for explicit gate tests."""
     monkeypatch.delenv(beacon.DISABLE_ENV, raising=False)
+    monkeypatch.setattr(beacon, "OUTBOUND_TELEMETRY_ENABLED", True)
     monkeypatch.setattr(beacon, "is_ci", lambda: False)
     monkeypatch.setattr(beacon, "is_default_home", lambda: True)
     monkeypatch.setattr(

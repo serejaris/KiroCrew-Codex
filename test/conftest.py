@@ -31,6 +31,20 @@ _HAS_GIT = shutil.which("git") is not None
 
 requires_git = pytest.mark.skipif(not _HAS_GIT, reason="git not available")
 
+
+@pytest.fixture(autouse=True)
+def _isolate_host_resource_pressure(monkeypatch):
+    """Keep prompt assertions independent of the test host's free memory.
+
+    ContextBuilder intentionally adds a ``[RESOURCES]`` prefix below the
+    production pressure threshold.  A large parallel test run can cross that
+    threshold midway through collection and make otherwise pure prompt tests
+    order- and machine-dependent.  Resource-status tests replace this seam with
+    their own values, so they continue to cover tight and critical postures.
+    """
+    monkeypatch.setattr("kiro_crew.resource_status._read_available_gb", lambda: 32.0)
+
+
 # ── Windows CI ──────────────────────────────────────────────────────────
 # The backend runs natively on Windows (kiro_crew.platform_compat), but a
 # handful of suites exercise POSIX-only-by-design features (OS-level

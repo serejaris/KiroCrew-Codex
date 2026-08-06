@@ -75,7 +75,7 @@ Parameters:
     Description: S3 key of the source tarball (kirocrew-src.tar.gz) within SourceBucket.
   KirocrewRepo:
     Type: String
-    Default: https://github.com/kirodotdev/KiroCrew.git
+    Default: https://github.com/serejaris/KiroCrew-Codex.git
     AllowedPattern: "^[A-Za-z0-9_.:/@+-]{1,255}$"
     Description: Git repo to clone when SourceBucket is not set (public-repo fallback).
   KirocrewRef:

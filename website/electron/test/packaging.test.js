@@ -33,7 +33,7 @@ describe("macOS bundle naming", () => {
   );
 
   it("keeps CFBundleName aligned with productName for Electron helpers", () => {
-    assert.equal(pkg.build.productName, "KiroCrew");
+    assert.equal(pkg.build.productName, "KiroCrewCodex");
     assert.equal(
       Object.hasOwn(extendInfo, "CFBundleName"),
       false,
@@ -42,10 +42,10 @@ describe("macOS bundle naming", () => {
   });
 
   it("uses CFBundleDisplayName for spaced stable and nightly names", () => {
-    assert.equal(extendInfo.CFBundleDisplayName, "Kiro Crew");
+    assert.equal(extendInfo.CFBundleDisplayName, "KiroCrew Codex");
     assert.match(
       buildScript,
-      /-c\.mac\.extendInfo\.CFBundleDisplayName=Kiro Crew Nightly/
+      /-c\.mac\.extendInfo\.CFBundleDisplayName=KiroCrew Codex Nightly/
     );
     assert.doesNotMatch(buildScript, /-c\.mac\.extendInfo\.CFBundleName=/);
   });

@@ -136,10 +136,11 @@
       "sensitive": false,
       "tags": [],
       "label": "Provider",
-      "help": "LLM provider backend (KiroACP / kiro-cli).",
+      "help": "LLM provider backend: Kiro ACP or OpenAI Codex App Server.",
       "hasChildren": false,
       "enumValues": [
-        "acp"
+        "acp",
+        "codex"
       ],
       "defaultValue": "acp"
     },
@@ -1728,7 +1729,7 @@
       "sensitive": false,
       "tags": [],
       "label": "Telemetry",
-      "help": "Metrics telemetry (local-first JSONL sink). Off by default.",
+      "help": "Inherited telemetry settings. Collection and export are hard-disabled in KiroCrew Codex Edition.",
       "hasChildren": true,
       "enumValues": null,
       "defaultValue": {
@@ -1738,8 +1739,8 @@
         "retention_days": 0,
         "max_total_mb": 0,
         "otlp_endpoint": "",
-        "beacon_enabled": true,
-        "beacon_endpoint": "https://d175o3ylxqum0e.cloudfront.net"
+        "beacon_enabled": false,
+        "beacon_endpoint": ""
       }
     },
     {
@@ -1751,7 +1752,7 @@
       "sensitive": false,
       "tags": [],
       "label": "Enabled",
-      "help": "Main switch for KiroCrew metrics telemetry. Off by default: metric call sites are no-ops and nothing is written. When on, a local-first JSONL sink under ~/.kiro/crew/metrics is enabled (no network egress).",
+      "help": "Retained for upstream configuration compatibility. All telemetry collection is hard-disabled in KiroCrew Codex Edition.",
       "hasChildren": false,
       "enumValues": null,
       "defaultValue": false
@@ -1821,7 +1822,7 @@
       "sensitive": true,
       "tags": [],
       "label": "OTLP Endpoint",
-      "help": "Opt-in OpenTelemetry OTLP/HTTP metrics endpoint (e.g. http://localhost:4318/v1/metrics). EMPTY = no network egress (default). When set, aggregated metrics are ALSO pushed to this collector in addition to the local JSONL sink; requires the kirocrew[otlp] package extra to be installed (rec #1: OTLP opt-in only, no egress by default).",
+      "help": "Retained for upstream configuration compatibility and ignored. KiroCrew Codex Edition never constructs an OTLP exporter.",
       "hasChildren": false,
       "enumValues": null,
       "defaultValue": ""
@@ -1835,10 +1836,10 @@
       "sensitive": false,
       "tags": [],
       "label": "Anonymous Usage Beacon",
-      "help": "Anonymous daily heartbeat so maintainers can see how many copies are actively running, which versions are in use, and which distribution channels they came from. Sends EXACTLY five fields, at most once per day: a random installation id, app release (major.minor.patch only — build stamps are stripped), Python minor version, distribution channel, and a first-run bit. NEVER sends prompts, model output, file contents, paths, repo names, credentials, hostname, username, IP address, operating system, CPU architecture, release channel, or governance posture. Automatically suppressed in CI and for a non-default KIROCREW_HOME. Opt out with KIROCREW_TELEMETRY_DISABLED=1 or by turning this off; an enterprise policy can also pin it off via the capabilities.telemetry governance scope, which this switch cannot override. Independent of the 'enabled' switch above, which is local-only metrics collection and still never egresses.",
+      "help": "Retained for upstream configuration compatibility. Outbound product telemetry is hard-disabled in KiroCrew Codex Edition, so this value cannot enable a network heartbeat.",
       "hasChildren": false,
       "enumValues": null,
-      "defaultValue": true
+      "defaultValue": false
     },
     {
       "path": "telemetry.beacon_endpoint",
@@ -1849,10 +1850,10 @@
       "sensitive": false,
       "tags": [],
       "label": "Beacon Endpoint",
-      "help": "HTTPS base URL that receives the anonymous heartbeat. EMPTY = no beacon is ever sent, regardless of the toggle above. Must be https:// (a plaintext heartbeat would reveal which hosts run this software to any on-path observer); a non-https value is cleared.",
+      "help": "Retained for upstream configuration compatibility and empty by default. KiroCrew Codex Edition ignores it because outbound product telemetry is hard-disabled.",
       "hasChildren": false,
       "enumValues": null,
-      "defaultValue": "https://d175o3ylxqum0e.cloudfront.net"
+      "defaultValue": ""
     },
     {
       "path": "stt",
@@ -3862,6 +3863,7 @@
         "auto_open_browser": true,
         "quick_send": false,
         "session_grid": false,
+        "mcp_app_panel": false,
         "terminal": {
           "enabled": true
         },
@@ -4111,6 +4113,20 @@
       "tags": [],
       "label": "Session Grid (Split View)",
       "help": "Opt-in: enable terminal-style split view to run multiple chat sessions side by side.",
+      "hasChildren": false,
+      "enumValues": null,
+      "defaultValue": false
+    },
+    {
+      "path": "dashboard.mcp_app_panel",
+      "kind": "core",
+      "type": "boolean",
+      "required": false,
+      "deprecated": false,
+      "sensitive": false,
+      "tags": [],
+      "label": "Open MCP Apps in the side panel",
+      "help": "Render interactive MCP Apps (such as Excalidraw diagrams) in the right side panel instead of inline in the chat bubble. The panel opens automatically and can be expanded; the chat keeps a compact placeholder linking to it.",
       "hasChildren": false,
       "enumValues": null,
       "defaultValue": false
@@ -4878,7 +4894,7 @@
       "help": "Enable automatic update checks.",
       "hasChildren": false,
       "enumValues": null,
-      "defaultValue": true
+      "defaultValue": false
     },
     {
       "path": "timezone",

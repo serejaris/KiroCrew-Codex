@@ -1,5 +1,11 @@
 # KiroCrew Release Process
 
+> This document describes the upstream `kirodotdev/KiroCrew` signed release
+> lanes. KiroCrew Codex Edition publishes source-only prereleases from
+> `codex-main`; its current procedure is in
+> [CONTRIBUTING.md](../CONTRIBUTING.md#releasing-new-versions). Amazon signing,
+> CDN, telemetry, and update infrastructure are not used by the community fork.
+
 Deeper detail: [`release-process-design.md`](release-process-design.md).
 
 ## The model

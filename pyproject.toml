@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kirocrew"
-version = "0.1.3"
-description = "Personal AI agent that runs locally — chat via CLI, dashboard, Slack, or desktop app"
+version = "0.2.0"
+description = "Persistent local AI workspace with OpenAI Codex and Kiro ACP providers"
 readme = "README.md"
 # macOS (x86_64 + arm64) and Linux (x86_64 + aarch64), CPython 3.10-3.13.
 # Must be declared in this [project] table: when it exists, setuptools reads
@@ -20,7 +20,9 @@ requires-python = ">=3.10"
 dynamic = ["dependencies", "optional-dependencies"]
 
 [project.urls]
-Homepage = "https://github.com/kirodotdev/KiroCrew"
+Homepage = "https://github.com/serejaris/KiroCrew-Codex"
+Repository = "https://github.com/serejaris/KiroCrew-Codex"
+Issues = "https://github.com/serejaris/KiroCrew-Codex/issues"
 
 [project.scripts]
 kirocrew = "kiro_crew.cli:main"
@@ -101,4 +103,3 @@ exclude = ['/_vendor/']
 module = ["kiro_crew._vendor.*", "llama_cpp", "llama_cpp.*", "diskcache"]
 ignore_errors = true
 follow_imports = "skip"
-

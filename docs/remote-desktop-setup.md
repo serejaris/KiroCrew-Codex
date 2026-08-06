@@ -63,7 +63,7 @@ for the full walkthrough:
 
 ```bash
 # 1. Clone and install the backend
-git clone https://github.com/kirodotdev/KiroCrew.git
+git clone https://github.com/serejaris/KiroCrew-Codex.git
 cd kirocrew
 
 # 2. Build the frontend bundle

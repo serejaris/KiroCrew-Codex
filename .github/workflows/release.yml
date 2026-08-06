@@ -25,6 +25,7 @@ jobs:
   # release on the insider channel; bare semver tags are stable.
   version:
     name: Derive Version + Channel
+    if: github.repository == 'kirodotdev/KiroCrew'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:

@@ -301,6 +301,17 @@ class AcpProvider(LLMProvider):
         return self._client
 
     @property
+    def provider_id(self) -> str:
+        return "claude_code" if self.is_claude_backend else "acp"
+
+    @property
+    def resumed(self) -> bool:
+        return bool(getattr(self._client, "resumed", False))
+
+    def set_resume_session_id(self, session_id: str) -> None:
+        self._client.set_resume_session_id(session_id)
+
+    @property
     def cwd(self) -> str:
         """Working directory this provider operates in.
 

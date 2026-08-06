@@ -163,7 +163,7 @@ def render_unit(apparmor_profile: str = "") -> str:
     return (
         "[Unit]\n"
         "Description=Kiro Crew gateway (dashboard + Slack + cron)\n"
-        "Documentation=https://github.com/kirodotdev/KiroCrew\n"
+        "Documentation=https://github.com/serejaris/KiroCrew-Codex\n"
         "After=network-online.target\n"
         "Wants=network-online.target\n"
         # If the gateway crashes hard 3 times within 5 minutes, give up.

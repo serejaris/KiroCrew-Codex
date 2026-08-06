@@ -221,9 +221,11 @@ class TestBoolValidator:
         assert written["telemetry"]["beacon_enabled"] is False
 
         async with TestClient(TestServer(_make_app())) as c:
-            assert (await _patch(c, "telemetry.beacon_enabled", True)).status == 200
+            response = await _patch(c, "telemetry.beacon_enabled", True)
+            assert response.status == 403
+            assert "hard-disabled" in (await response.json())["error"]
         written = json.loads(tmp_config.read_text(encoding="utf-8"))
-        assert written["telemetry"]["beacon_enabled"] is True
+        assert written["telemetry"]["beacon_enabled"] is False
 
     @pytest.mark.asyncio
     async def test_beacon_enabled_rejects_non_bool(self, tmp_config) -> None:
@@ -252,6 +254,7 @@ class TestBoolValidator:
         """
         from kiro_crew.dashboard.handlers import core as core_mod
 
+        monkeypatch.setattr(core_mod.beacon, "OUTBOUND_TELEMETRY_ENABLED", True)
         monkeypatch.setattr(core_mod, "_beacon_governance_pinned_off", lambda: True)
         async with TestClient(TestServer(_make_app())) as c:
             resp = await _patch(c, "telemetry.beacon_enabled", True)
@@ -282,6 +285,7 @@ class TestBoolValidator:
         """The gate must not fire on an ordinary standalone install."""
         from kiro_crew.dashboard.handlers import core as core_mod
 
+        monkeypatch.setattr(core_mod.beacon, "OUTBOUND_TELEMETRY_ENABLED", True)
         monkeypatch.setattr(core_mod, "_beacon_governance_pinned_off", lambda: False)
         async with TestClient(TestServer(_make_app())) as c:
             assert (await _patch(c, "telemetry.beacon_enabled", True)).status == 200

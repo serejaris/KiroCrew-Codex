@@ -17,8 +17,8 @@ The app will:
 2. Launch `kirocrew gateway` when needed
 3. Show a loading screen while the backend boots
 4. Load the dashboard
-5. Guide the user through Kiro CLI installation and device sign-in on the
-   gateway host when either prerequisite is missing
+5. Guide the user through the configured provider's prerequisite when it is
+   missing: Codex login for `agent.provider=codex`, or Kiro CLI for `acp`
 
 The Electron shell uses the same gateway-hosted setup screen as every browser;
 it has no separate installer or login runner. On macOS and Linux, **Install Kiro
@@ -39,11 +39,12 @@ cd electron
 npm install
 npx electron-builder --mac --dir
 APP_DIR=$([ "$(uname -m)" = "arm64" ] && echo "dist/mac-arm64" || echo "dist/mac")
-sudo rm -rf /Applications/KiroCrew.app
-sudo cp -R "$APP_DIR/KiroCrew.app" /Applications/KiroCrew.app
+sudo rm -rf /Applications/KiroCrewCodex.app
+sudo cp -R "$APP_DIR/KiroCrewCodex.app" /Applications/KiroCrewCodex.app
 ```
 
-Launch via Spotlight (Cmd+Space → "KiroCrew"), Dock, or `open /Applications/KiroCrew.app`.
+Launch via Spotlight (Cmd+Space → "KiroCrew Codex"), Dock, or
+`open /Applications/KiroCrewCodex.app`.
 Right-click the Dock icon → Options → Keep in Dock to pin it.
 
 ## Build `.dmg`
@@ -62,8 +63,8 @@ After pulling new code and rebuilding (`npm run build`):
 # Rebuild and reinstall the desktop app
 cd electron && npx electron-builder --mac --dir
 APP_DIR=$([ "$(uname -m)" = "arm64" ] && echo "dist/mac-arm64" || echo "dist/mac")
-sudo rm -rf /Applications/KiroCrew.app
-sudo cp -R "$APP_DIR/KiroCrew.app" /Applications/KiroCrew.app
+sudo rm -rf /Applications/KiroCrewCodex.app
+sudo cp -R "$APP_DIR/KiroCrewCodex.app" /Applications/KiroCrewCodex.app
 
 # Restart the gateway (if using Launch Agent)
 launchctl stop dev.kirocrew.gateway
@@ -74,7 +75,7 @@ launchctl start dev.kirocrew.gateway
 
 ```bash
 # Remove the desktop app
-sudo rm -rf /Applications/KiroCrew.app
+sudo rm -rf /Applications/KiroCrewCodex.app
 
 # Remove the Launch Agent (if configured from main README)
 launchctl unload ~/Library/LaunchAgents/dev.kirocrew.gateway.plist 2>/dev/null

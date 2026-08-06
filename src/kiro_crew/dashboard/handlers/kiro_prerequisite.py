@@ -9,6 +9,7 @@ from typing import Any
 
 from aiohttp import web
 
+from kiro_crew.dashboard.kiro_readiness import codex_readiness
 from kiro_crew.kiro_prerequisite import (
     OFFICIAL_INSTALL_DOCS_URL,
     KiroPrerequisiteService,
@@ -118,6 +119,36 @@ async def api_kiro_prerequisite_status(request: web.Request) -> web.Response:
         denied = await _dashboard_owner_only(request)
         assert denied is not None
         return denied
+
+    state = request.app.get("state")
+    sessions = getattr(state, "sessions", None)
+    configured_provider = getattr(sessions, "configured_provider", "acp")
+    if isinstance(configured_provider, str) and configured_provider == "codex":
+        force = request.query.get("refresh") in ("1", "true") and _is_dashboard_owner(request)
+        readiness = await codex_readiness(request, max_age_secs=0.0 if force else None)
+        snapshot = asdict(
+            PrerequisiteStatus(
+                platform="Codex App Server",
+                installed=readiness.installed,
+                authenticated=readiness.authenticated,
+                ready=readiness.ready,
+                initial_setup_complete=readiness.ready,
+                docs_url="https://developers.openai.com/codex/cli/",
+            )
+        )
+        snapshot["operation"] = asdict(
+            OperationStatus(
+                status="idle" if readiness.ready else "failed",
+                message=(
+                    "Codex is ready."
+                    if readiness.ready
+                    else "Install Codex and sign in with ChatGPT using `codex login`."
+                ),
+                error="" if readiness.ready else readiness.detail,
+            )
+        )
+        snapshot["setup_allowed"] = False
+        return web.json_response(snapshot)
 
     # Only an owner may force a host probe; a non-owner's refresh reads latched
     # state like any other poll (they receive the redacted payload regardless).

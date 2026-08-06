@@ -87,7 +87,11 @@ _DENIED_BUNDLE_PREFIXES: tuple[DeniedApp, ...] = (
             "KiroCrew's own dashboard can change the agent's security settings, "
             "which must only be done by the operator out-of-band"
         ),
-        bundle_prefixes=("com.amazon.kiro.crew", "dev.kiro.crew"),
+        bundle_prefixes=(
+            "com.amazon.kiro.crew",
+            "dev.kiro.crew",
+            "dev.serejaris.kirocrew.codex",
+        ),
         name_substrings=("kiro crew", "kirocrew"),
         # The dashboard is ALSO reachable as a browser tab, where the app identity
         # is Chrome's or Safari's and the two lists above cannot fire. The window

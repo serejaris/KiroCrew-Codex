@@ -26,6 +26,7 @@ const path = require("path");
 
 const ARTIFACT_NAME = "desktop-metrics.json";
 const DEBUG_ENV_VAR = "KIROCREW_DEBUG";
+const PRODUCT_TELEMETRY_ENABLED = false;
 
 // Kept in sync with kiro_crew.perf_sampler.profiling_enabled: the desktop and
 // backend halves of the profiler must agree on what "debug" means, or the CLI
@@ -45,7 +46,8 @@ const MIN_INTERVAL_MS = 500;
  * Mirrors the backend gate exactly, including treating an explicit "0"/"false"
  * as OFF rather than as "the variable is set, so on".
  */
-function profilingEnabled(env = process.env) {
+function profilingEnabled(env = process.env, distributionAllowsTelemetry = PRODUCT_TELEMETRY_ENABLED) {
+  if (!distributionAllowsTelemetry) return false;
   const raw = env && env[DEBUG_ENV_VAR];
   if (raw === undefined || raw === null) return false;
   return TRUTHY.has(String(raw).trim().toLowerCase());
@@ -127,6 +129,7 @@ function createMetricsRecorder({
   intervalMs = DEFAULT_INTERVAL_MS,
   capacity = DEFAULT_CAPACITY,
   env = process.env,
+  distributionAllowsTelemetry = PRODUCT_TELEMETRY_ENABLED,
   log = () => {},
   now = () => new Date(),
   writeFileSync = fs.writeFileSync,
@@ -137,7 +140,7 @@ function createMetricsRecorder({
   clearIntervalFn = clearInterval,
   meta = {},
 } = {}) {
-  const enabled = profilingEnabled(env);
+  const enabled = profilingEnabled(env, distributionAllowsTelemetry);
   const artifactPath = dir ? path.join(dir, ARTIFACT_NAME) : null;
   // Guard the interval floor so a bad value cannot turn a debug aid into a busy
   // loop competing with the app it is measuring.
@@ -228,6 +231,7 @@ module.exports = {
   buildSample,
   renderArtifact,
   ARTIFACT_NAME,
+  PRODUCT_TELEMETRY_ENABLED,
   DEBUG_ENV_VAR,
   DEFAULT_INTERVAL_MS,
   DEFAULT_CAPACITY,

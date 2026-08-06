@@ -1,5 +1,10 @@
 """Telemetry provider wiring — builds the process-global ``MetricsRecorder``.
 
+KiroCrew Codex Edition hard-disables this entire collection pipeline. The
+inherited implementation remains readable for upstream merges and its tests,
+but the production gate below always returns a no-op recorder and refuses OTLP
+even when legacy configuration or environment variables request it.
+
 Consent + local-first:
   * ``telemetry.enabled`` defaults **False**. When off, ``get_recorder()`` returns
     a no-op recorder, so adding metric call sites is a zero-runtime-effect change
@@ -130,6 +135,11 @@ def _load_otel() -> bool:
 
 logger = logging.getLogger(__name__)
 
+# Distribution policy: no product telemetry, including local metric shards and
+# user-configured OTLP export. Tests patch this to exercise the inherited
+# implementation without weakening the production build.
+PRODUCT_TELEMETRY_ENABLED = False
+
 _SERVICE_NAME = "kirocrew"
 _SCOPE = "kiro_crew"
 
@@ -219,6 +229,8 @@ _ENV_FALSY = frozenset({"0", "false", "no", "off"})
 
 def _consent_enabled(cfg: object) -> bool:
     """Resolve the telemetry consent gate: env var overrides the config flag."""
+    if not PRODUCT_TELEMETRY_ENABLED:
+        return False
     raw = os.environ.get(_TELEMETRY_ENV, "").strip().lower()
     if raw in _ENV_TRUTHY:
         return True
@@ -332,6 +344,8 @@ def _build_otlp_reader(cfg: object) -> Optional["_ReaderT"]:
     facade sanitises attributes before they reach any reader), so opting in
     cannot leak prompts, content, tokens, paths, user ids, or secrets.
     """
+    if not PRODUCT_TELEMETRY_ENABLED:
+        return None
     endpoint = str(getattr(cfg, "otlp_endpoint", "") or "").strip()
     if not endpoint:
         return None

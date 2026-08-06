@@ -1,8 +1,8 @@
 ## LLM Provider Abstraction
 
-KiroCrew drives a single LLM backend: `kiro-cli` over ACP. The `LLMProvider`
-interface is retained as a thin seam (consumers depend only on the ABC), but
-there is exactly one concrete provider — `agent.provider` is fixed to `acp`.
+KiroCrew supports `kiro-cli` over ACP and the official OpenAI Codex App Server.
+Consumers depend on the shared `LLMProvider` interface; `agent.provider`
+selects `acp` or `codex`.
 
 ### Architecture
 
@@ -17,20 +17,21 @@ there is exactly one concrete provider — `agent.provider` is fixed to `acp`.
          │   providers/base   │
          └─────────┬─────────┘
                    │
-            ┌──────┴──────┐
-            │ AcpProvider │
-            │ acp.py      │
-            │ kiro-cli    │
-            └─────────────┘
+        ┌──────────┴──────────┐
+        │                     │
+ ┌──────┴──────┐      ┌───────┴────────┐
+ │ AcpProvider │      │ Codex Provider │
+ │ kiro-cli    │      │ codex app-server│
+ └─────────────┘      └────────────────┘
 ```
 
-**Note:** the removed Bedrock provider and the removed standalone provider were
+**Note:** the removed Bedrock provider and removed standalone Claude provider were
 **deleted** during de-Amazoning, along with their config fields and the
 multi-provider dispatch factory. `acp/client.py` keeps a dormant
 `ACP_BACKEND_CLAUDE` seam (`AcpProvider` can in principle drive
 `claude-agent-acp`) so an internal companion can re-register a Claude backend,
-but the public provider factory never selects it — `kiro-cli` is the only
-backend.
+but the public provider factory never selects it. Codex integration uses its
+own official App Server protocol.
 See [`../features/claude-code-provider.md`](../features/claude-code-provider.md).
 
 ### LLMProvider ABC (`providers/base.py`)
@@ -62,7 +63,7 @@ Provider-agnostic event dataclass (aliased from `AcpEvent`):
 | `thinking_chunk` | Extended thinking (Claude 3.7+) |
 | `tool_call` | Tool invocation |
 | `tool_result` | Tool output |
-| `permission_request` | Tool approval request (ACP only) |
+| `permission_request` | Tool or additional-permission approval request |
 | `complete` | End of turn |
 | `compaction_status` | Compaction result |
 | `clear_status` | Clear display |
@@ -73,16 +74,26 @@ Provider-agnostic event dataclass (aliased from `AcpEvent`):
 
 ### AcpProvider (`providers/acp.py`)
 
-The sole provider. Spawns a long-lived `kiro-cli acp --agent <name>` subprocess
+Spawns a long-lived `kiro-cli acp --agent <name>` subprocess
 and speaks JSON-RPC 2.0 over stdio.
+
+### CodexAppServerProvider (`providers/codex.py`)
+
+Spawns `codex app-server --listen stdio://`, performs the official
+`initialize` handshake, starts or resumes a Codex thread, and maps turn/item
+notifications onto `LLMEvent`. Authentication is owned by Codex CLI, so a
+cached ChatGPT login is reused without copying credentials into KiroCrew.
+Native model discovery uses `model/list`; approvals are answered through the
+App Server request/response channel; token usage drives the existing context
+meter.
 
 **Dormant backend seam:** `AcpProvider`/`AcpClient` retain an `acp_backend`
 parameter (`"" ` → kiro-cli; `"claude"` / `ACP_BACKEND_CLAUDE` → `claude-agent-acp`)
 so an internal companion can re-register a Claude backend over the same
-client. **The public provider factory only ever selects kiro-cli** — the claude
-branch is unreachable in this build. Its binary-resolution + config-isolation
-details live in [`acp-client.md`](acp-client.md); do not re-add the registration
-glue or a provider selector (see the repo-root `CLAUDE.md`).
+client. The public factory selects Kiro ACP or Codex App Server from
+`agent.provider`; the dormant Claude branch remains unreachable. Its
+binary-resolution and config-isolation details live in
+[`acp-client.md`](acp-client.md).
 
 **Key APIs:**
 - `start()` → `AcpClient.ensure_ready()` (spawns process, handshake, session/new)
@@ -118,18 +129,20 @@ glue or a provider selector (see the repo-root `CLAUDE.md`).
 }
 ```
 
-- `agent.provider` is fixed to `"acp"` (enum `["acp"]`); there is no provider to choose.
-- `create_provider_factory()` returns a `Callable` that creates the kiro-cli `AcpProvider`.
+- `agent.provider` accepts `"acp"` and `"codex"`.
+- `create_provider_factory()` returns the matching provider factory.
 
 ### MCP Server Registration
 
-MCP servers are passed directly in the `session/new` params. The two managed
-servers (`kirocrew-core`, `kirocrew-cron` — see `agent.py:_MANAGED_MCP_SERVERS`)
-are always present; user-configured servers from the agent config are merged in.
+ACP receives MCP servers in `session/new`. Codex receives the same managed agent
+definitions as App Server thread config: stdio and URL transports, enabled
+state, disabled tools, static HTTP headers, and auto-approved tool rules are
+translated to Codex `mcp_servers` keys. The managed KiroCrew servers remain
+available in both provider modes.
 
 ### SessionManager (`session.py`)
 
-- Provider-agnostic via factory (one provider: kiro-cli `AcpProvider`)
+- Provider-agnostic via factory (`AcpProvider` or `CodexAppServerProvider`)
 - Calls `repair_agent_configs()` on gateway startup and periodically
 - context_info() reports model/agent
 - Resume: calls `set_resume_session_id()` before `start()`
@@ -156,8 +169,10 @@ A transient 5xx that arrives *after* the turn already emitted output (the `_turn
 
 ### Installation
 
-KiroCrew drives `kiro-cli` over ACP — install it per its own docs, ensure it is
-on `PATH`, and run `kiro-cli login`. `kirocrew doctor` reports its status.
+For `agent.provider=acp`, install `kiro-cli` and run `kiro-cli login`. For
+`agent.provider=codex`, install Codex (or use the binary bundled with the
+ChatGPT desktop app) and run `codex login`. `kirocrew doctor` reports the
+selected provider's binary and authentication status.
 
 
 ## AcpProvider: shared-runtime startup

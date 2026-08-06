@@ -6,39 +6,20 @@ with a web dashboard you can chat with.
 
 ## Prerequisites
 
-- **Python 3.9+** (3.12 recommended)
-- **Node.js 16+** (for building the dashboard)
-- **kiro-cli** — the agent backend (installed via the dashboard on first launch)
-- **Ollama** (optional) — for memory and knowledge-library embeddings
+- **Python 3.10–3.13**
+- **Node.js 18+** and npm (for building the dashboard)
+- A logged-in **Codex CLI** or ChatGPT desktop app
+- Optional **kiro-cli** for the original ACP provider
 
 ## Installation
 
-### Option A: One-line install (recommended)
+### Build from source
 
-The fastest path — installs a prebuilt, SHA-256-verified wheel from the release
-CDN. No clone, no npm, no build step:
-
-```bash
-curl -fsSL https://download.crew.kiro.dev/cli.sh | sh -s -- --channel nightly
-```
-
-The installer uses `pipx` when available (else creates a managed venv at
-`~/.kiro/crew/venv`), verifies the wheel's checksum against the published
-manifest, and records your channel to `~/.kiro/crew/channel`.
-
-To pin a specific version:
+The Codex Edition release is source-only:
 
 ```bash
-curl -fsSL https://download.crew.kiro.dev/cli.sh | sh -s -- --channel nightly --version 0.1.0.dev20260718
-```
-
-### Option B: Build from source
-
-For contributors or when you want the latest code:
-
-```bash
-git clone https://github.com/kirodotdev/KiroCrew.git
-cd KiroCrew
+git clone https://github.com/serejaris/KiroCrew-Codex.git
+cd KiroCrew-Codex
 
 # 1. Build the frontend dashboard
 cd website && npm install && npm run build && cd ..
@@ -49,13 +30,13 @@ pip install -e ".[voice]"    # [voice] adds optional speech-to-text extras
 
 This installs the `kirocrew` and `kirocrew-browse` commands onto your PATH.
 
-### Option C: Desktop app
+### Desktop app
 
 A double-clickable app that bundles Python + deps inside Electron — end users
 need no Python, pip, or npm:
 
 ```bash
-make desktop    # → KiroCrew-*.dmg (macOS) or KiroCrew-*.AppImage (Linux)
+UNIVERSAL=0 make desktop
 ```
 
 See [desktop-app.md](desktop-app.md) for details on the build pipeline.
@@ -77,15 +58,18 @@ kirocrew setup
 The wizard configures your data directory, agent backend, and (optionally) Slack
 credentials. Skip the Slack tokens to run in **dashboard-only mode**.
 
-### 2. Install the agent backend (kiro-cli)
+### 2. Select Codex
 
-KiroCrew needs `kiro-cli` to talk to the LLM. On the first dashboard launch,
-the **Set up Kiro** page guides you through:
+KiroCrew Codex Edition reuses your existing Codex login:
 
-1. Installing kiro-cli on your machine (macOS, Linux, or Windows)
-2. Completing device-code sign-in
+```bash
+codex login status
+kirocrew config set agent.provider codex
+kirocrew config set agent.model auto
+kirocrew doctor
+```
 
-Alternatively, if you already have kiro-cli installed:
+The original Kiro backend remains optional:
 
 ```bash
 kiro-cli whoami    # check if logged in
@@ -96,14 +80,7 @@ kirocrew doctor    # full health check
 
 Memory and knowledge search use local embeddings. KiroCrew ships a bundled
 llama-cpp-python runtime that downloads the model (~610 MB) automatically on
-first start. No setup needed — it just works.
-
-If you prefer Ollama:
-
-```bash
-# Install from https://ollama.com, then:
-ollama pull qwen3-embedding:0.6b
-```
+first start. No separate embedding service is required.
 
 ### 4. Start the gateway
 
@@ -190,7 +167,7 @@ Key settings:
 
 | Key | Default | Purpose |
 |-----|---------|---------|
-| `agent.provider` | `"acp"` | Agent backend (always kiro-cli) |
+| `agent.provider` | `"acp"` | Agent backend: `codex` (ChatGPT/Codex login) or `acp` (kiro-cli) |
 | `agent.sandbox` | `"auto"` | OS-level isolation: `auto`, `strict`, or `off` |
 | `agent.approval_mode` | `"interactive"` | Tool approval: `interactive` or `auto` |
 | `session.timeout_secs` | `1800` | Idle session timeout |

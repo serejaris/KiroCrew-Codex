@@ -21,7 +21,7 @@ on:
     # A merge into the default branch is the usual cause of other open PRs
     # becoming conflicted -- re-sweep immediately so the labels stay fresh
     # without waiting for the next scheduled run.
-    branches: [main]
+    branches: [codex-main]
   workflow_dispatch: {}
 
 permissions:

@@ -153,8 +153,8 @@ function rowWindow(m: RawModel): number {
 }
 
 export class AcpAdapter implements ProviderAdapter {
-  readonly id = 'acp' as const
-  readonly displayName = 'ACP'
+  readonly id: ProviderAdapter['id'] = 'acp'
+  readonly displayName: string = 'ACP'
 
   readonly capabilities: ProviderCapabilities = {
     hooks: true,

@@ -1,5 +1,9 @@
 # Running KiroCrew in Docker
 
+> The published `ghcr.io/kirodotdev/kirocrew` image belongs to upstream and
+> does not contain the Codex Edition changes. This community release is
+> source-only; build a local image from this repository if you need a container.
+
 The official image runs the KiroCrew **gateway** — dashboard, channel bots
 (Slack / Discord / Telegram / WeCom / Webex), crons, and the kiro-cli agent
 runtime — as a headless container. It is the recommended way to run KiroCrew

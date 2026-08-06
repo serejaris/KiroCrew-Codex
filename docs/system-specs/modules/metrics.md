@@ -1,15 +1,18 @@
 # Metrics Telemetry Module
 
+> **KiroCrew Codex Edition policy:** all telemetry is hard-disabled. Metric call
+> sites resolve to no-ops; heartbeat/install receipts, local JSONL collection,
+> and OTLP export cannot be enabled by config or environment variables. The
+> detailed implementation below is retained as an auditable upstream reference.
+
 Last Updated: 2026-08-04 (anonymous official-app install receipt + disclosure)
 
 ## Overview
 
-Local-first metrics telemetry built on the OpenTelemetry SDK (Apache-2.0 / CNCF).
-The trunk is designed so future work is purely adding instrument calls at call
-sites — never changing this plumbing. **Default OFF** (`telemetry.enabled:
-false`): all metric call sites are cheap no-ops and nothing is written or
-exported, byte-identical to no telemetry (mirrors the `mcp_gateway.enabled` /
-`skills.lazy_load` opt-in convention).
+The upstream tree contains a local-first OpenTelemetry implementation
+(Apache-2.0 / CNCF). This edition places a compile-time distribution gate ahead
+of it. Every production call receives a no-op recorder; no metrics file is
+written and no exporter is constructed.
 
 Source: `src/kiro_crew/metrics/` — `schema.py`, `recorder.py`, `provider.py`,
 `local_exporter.py`, `http_metrics.py`. Tests: `test/metrics/`.
@@ -20,7 +23,7 @@ Source: `src/kiro_crew/metrics/` — `schema.py`, `recorder.py`, `provider.py`,
 |------|---------|
 | `schema.py` | Namespace constants (`NS_CORE = "kirocrew."`, `NS_GENAI = "gen_ai."`, `NS_APP_PREFIX = "app."`) + `validate_name` / `validate_attrs` / `redact` guardrails. Documents the low-cardinality contract. |
 | `recorder.py` | `MetricsRecorder` — facade over the OTEL `Meter`. Every metric passes namespace + privacy guardrails BEFORE reaching an instrument. Instrument-cache creation is lock-guarded (atomic check-then-create). Best-effort: a telemetry failure never propagates to the caller. `meter=None` = no-op recorder. |
-| `provider.py` | Consent gate + process-global recorder (`get_recorder()`) + graceful `shutdown()` / `reset_for_testing()`. When enabled, wires a `PeriodicExportingMetricReader` to the local JSONL exporter. Installs **one `View` per instrument** from `_HISTOGRAM_BUCKETS_MS`, each with its own `ExplicitBucketHistogramAggregation` boundaries (see below) — deliberately NOT a catch-all `instrument_type=Histogram` View. |
+| `provider.py` | Hard distribution gate + process-global no-op recorder (`get_recorder()`) + graceful `shutdown()` / `reset_for_testing()`. The inherited reader construction remains reachable only from tests that explicitly replace the gate. |
 | `local_exporter.py` | `JsonlMetricExporter` — appends one JSON line per export cycle to `<dir>/metrics-YYYY-MM-DD-<pid>.jsonl` (default dir `~/.kiro/crew/metrics`). Per-PID single-writer shards keep append + rotation lock-free, so concurrent exporters do not lose DELTA cycles. A private `.metrics.lock` serializes only retention sweeps; pruning skips canonical shards owned by live PIDs or modified within the safety window. **Bounded retention (rec #14):** shards rotate before an append exceeds `max_total_mb`; closed/expired shards are pruned directly by age and oldest-first size. Pruning is throttled to at most once per 300s and fully best-effort. Dir mode is 0o700, file mode 0o600, and nothing egresses the host. Declares DELTA `preferred_temporality` for Counter/UpDownCounter/Histogram so daily aggregation is an element-wise sum across cycles/PIDs. |
 | `http_metrics.py` | Gateway HTTP observability (rec #1): `record_boot_to_ready()` (boot-to-ready histogram) + `make_route_latency_middleware()` (per-route latency, wired as the outermost middleware on both `start_dashboard`/`start_api_server`). Bounds `route_template` cardinality via `collect_route_templates()` (build-time snapshot) + `route_template()` (`__unknown__` fallback); clamps `method` to a fixed allowlist and `status_class` to `1xx`..`5xx`/`other`. Upgraded WebSocket connections and `text/event-stream` SSE responses are excluded because their handler elapsed time is connection/turn lifetime, not HTTP request latency. Best-effort — a telemetry failure never alters a response. |
 
@@ -49,45 +52,30 @@ Source: `src/kiro_crew/metrics/` — `schema.py`, `recorder.py`, `provider.py`,
 
 | Field | Default | Meaning |
 |-------|---------|---------|
-| `enabled` | `false` | Main switch. Off = no-op recorder, nothing written. |
-| `local_dir` | `""` | JSONL shard dir; empty = `~/.kiro/crew/metrics`. `~` expansion supported. |
-| `export_interval_seconds` | `60` | Flush interval (floored to 1). |
-| `retention_days` | `0` | Age pruning is disabled by default to preserve pre-existing history on upgrade. Set a positive day window to opt in (rec #14). |
-| `max_total_mb` | `0` | Size pruning is disabled by default to preserve pre-existing history on upgrade. Set a positive opportunistic directory budget to opt in; protected active writers can temporarily exceed it (rec #14). |
-| `otlp_endpoint` | `""` | Opt-in OTLP/HTTP metrics endpoint (e.g. `http://localhost:4318/v1/metrics`). **Empty = no network egress (default).** When set, aggregated metrics are ALSO pushed to this collector in addition to the local JSONL sink; requires `pip install "kirocrew[otlp]"` (rec #1). |
+| `enabled` | `false` | Legacy field. `true` is rejected by supported CLI/API config paths and ignored by the production gate. |
+| `local_dir` | `""` | Legacy path field; no file is created. |
+| `export_interval_seconds` | `60` | Legacy reader setting; no reader is created. |
+| `retention_days` | `0` | Legacy retention field; no telemetry storage is active. |
+| `max_total_mb` | `0` | Legacy retention field; no telemetry storage is active. |
+| `otlp_endpoint` | `""` | Legacy exporter field. Non-empty values are rejected by supported CLI/API config paths and ignored by the production gate. |
 
 Field validation (`TelemetryConfig.__post_init__`): `export_interval_seconds`
 below 1 is floored to 1; negative `retention_days` / `max_total_mb` are clamped
 to `0` (cap disabled) rather than being interpreted as "prune everything".
 
-## Opt-in, retention bounds & egress (rec #14 / rec #1)
+## Distribution gate and egress
 
-**Default posture — nothing collected, nothing leaves the host.**
-`telemetry.enabled` defaults `false`, so every metric call site is a cheap no-op
-and no file is written. Even once local collection is enabled, `otlp_endpoint`
-defaults empty, so **no data ever leaves the machine unless the operator
-explicitly sets an OTLP endpoint.**
+`PRODUCT_TELEMETRY_ENABLED = false` is the edition boundary. It wins over
+`telemetry.enabled`, `KIROCREW_TELEMETRY`, and `otlp_endpoint`. The CLI and
+dashboard also reject attempts to enable collection or configure OTLP. The
+heartbeat beacon and install receipts use a separate
+`OUTBOUND_TELEMETRY_ENABLED = false` boundary. Electron performance recording
+uses the same hard-disabled distribution pattern. Automated tests temporarily
+replace these constants only to keep the inherited implementation auditable.
 
-**Easy opt-in (two equivalent ways):**
-- **Config flag:** set `"telemetry": {"enabled": true}` in `~/.kiro/crew/config.json`.
-- **Env var:** export `KIROCREW_TELEMETRY=1` (also accepts `true`/`yes`/`on`;
-  `0`/`false`/`no`/`off` force-disables). The env var overrides the config flag
-  and is handy for CI / containers / one-off debugging. It gates **local
-  collection only** — it never enables network egress. Resolved by
-  `provider._consent_enabled()`.
+## Inherited retention implementation reference
 
-**External OTLP egress (opt-in, off by default):** setting `otlp_endpoint` adds a
-second `PeriodicExportingMetricReader` alongside the local JSONL sink
-(`provider._build_otlp_reader`). Install support with
-`pip install "kirocrew[otlp]"`. If the endpoint is set but the package extra is
-not installed, telemetry
-degrades to local-only with a warning instead of crashing. The OTLP exporter
-only ever sees the same redacted, low-cardinality data points as the local sink
-(the `MetricsRecorder` facade sanitises attributes before they reach ANY
-reader), so opting in cannot leak prompts, content, tokens, paths, user ids, or
-secrets.
-
-**Bounded local retention (rec #14, explicit opt-in):** both destructive caps
+**Bounded local retention (rec #14, upstream reference):** both destructive caps
 default to `0`, so upgrading cannot delete existing telemetry history. Operators
 can opt in independently to age and/or size bounds:
 - *Age cap* — set `retention_days` to a positive window (for example `7`); shards

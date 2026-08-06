@@ -17,16 +17,25 @@ tooling.
 
 | Requirement | Needed for | Notes |
 |-------------|------------|-------|
-| **Python 3** | Backend | `pip` install; `make build` creates a `.venv` |
+| **Python 3.10–3.13** | Backend | `pip` install; `make build` creates a `.venv` |
 | **Node.js + npm** | Frontend (dashboard) | Builds the React/Vite SPA; also for the desktop app |
-| **An agent backend** | Driving the LLM | `kiro-cli` — see below |
-| **Ollama** (optional) | Memory / knowledge embeddings | Graceful degradation if absent |
+| **An agent backend** | Driving the LLM | Codex CLI or `kiro-cli` — see below |
+| **Local embedding model** | Memory / knowledge embeddings | Downloaded and verified automatically |
 
 ### Agent backend (required)
 
-KiroCrew drives an LLM through the **`kiro-cli`** agent over the
+For GPT models, select the official **Codex App Server** provider. It reuses the
+Codex CLI's ChatGPT login, including a login created by the ChatGPT desktop app:
+
+```bash
+codex login status
+kirocrew config set agent.provider codex
+kirocrew config set agent.model gpt-5.6-sol
+```
+
+The original **`kiro-cli`** backend remains available over the
 [Agent Client Protocol](https://github.com/zed-industries/agent-client-protocol)
-(ACP). It is the only provider (`agent.provider = acp`).
+(ACP) with `agent.provider = acp`.
 
 Install `kiro-cli` per its own docs, make sure it is on your `PATH`, and log in:
 
@@ -34,22 +43,13 @@ Install `kiro-cli` per its own docs, make sure it is on your `PATH`, and log in:
 kiro-cli login
 ```
 
-`kirocrew doctor` reports whether `kiro-cli` is found and logged in.
+`kirocrew doctor` checks the executable and login for the selected provider.
 
-### Ollama (optional — for memory / knowledge embeddings)
+### Local embeddings
 
-Memory and the knowledge library use a local [Ollama](https://ollama.com) server
-for embeddings. If Ollama is absent, KiroCrew degrades gracefully (embedding
-search is disabled) rather than crashing.
-
-```bash
-# Install Ollama from https://ollama.com, then pull the embedding model:
-ollama pull qwen3-embedding:0.6b      # default
-# or the documented fallback:
-ollama pull nomic-embed-text
-```
-
-Ollama runs at `http://localhost:11434` by default.
+Memory and knowledge search use a local Qwen3 GGUF model. KiroCrew downloads it
+from the configured HTTPS source, verifies its SHA-256 digest, and runs it
+in-process. No separate Ollama service is required.
 
 ## The three ways to run
 

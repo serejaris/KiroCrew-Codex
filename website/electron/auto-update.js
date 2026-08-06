@@ -338,6 +338,8 @@ function classifyError(err) {
  * @param {object} [deps.nativeAutoUpdater]     - Electron's native autoUpdater, observed
  *   for `before-quit-for-update` to know the installer took over (tests inject a stub)
  * @param {string} [deps.feedBase]             - override feed host
+ * @param {boolean} [deps.updatesEnabled]      - whether this distribution owns
+ *   a compatible signed update feed
  * @param {(state:object) => void} [deps.onUpdateState] - if provided, the
  *   in-app UI drives the install prompt: state transitions are pushed here
  *   ({state, version, notes, channel}) and the native dialog is suppressed.
@@ -376,6 +378,7 @@ function initAutoUpdate(deps) {
       try { return require("electron").autoUpdater || null; } catch { return null; }
     })(),
     feedBase = process.env.KIROCREW_UPDATE_FEED || DEFAULT_FEED_BASE,
+    updatesEnabled = true,
     onUpdateState = null,
     log = console,
   } = deps;
@@ -412,7 +415,18 @@ function initAutoUpdate(deps) {
       platform,
       packaged: !!app.isPackaged,
       // Escape hatch for a failed install (see manualDownloadUrl).
-      downloadUrl: manualDownloadUrl(currentChannel(), osPlatform),
+      downloadUrl: updatesEnabled ? manualDownloadUrl(currentChannel(), osPlatform) : null,
+    };
+  }
+
+  if (!updatesEnabled) {
+    log.info("[update] community fork — upstream auto-update disabled");
+    return {
+      check: () => {},
+      download: async () => {},
+      install: async () => {},
+      getInfo,
+      disabled: "community-fork",
     };
   }
 

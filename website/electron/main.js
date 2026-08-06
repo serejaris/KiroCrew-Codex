@@ -182,16 +182,17 @@ const { attachContextMenu } = require("./context-menu");
 
 // Set app name for macOS menu bar and dock. Nightly ships as a separate
 // side-by-side app, so its menu bar must say so.
-app.name = identityFamily(app.getVersion()) === "nightly" ? "Kiro Crew Nightly" : "Kiro Crew";
+app.name = identityFamily(app.getVersion()) === "nightly"
+  ? "KiroCrew Codex Nightly" : "KiroCrew Codex";
 
 // Windows taskbar identity. Without an explicit AppUserModelID, Windows groups
 // the app under the generic Electron host (wrong icon in the taskbar/jumplist,
 // pinning targets Electron rather than KiroCrew). Match the packaged appId
-// (build.appId = "com.amazon.kiro.crew"); nightly gets a distinct id so it
+// (build.appId = "dev.serejaris.kirocrew.codex"); nightly gets a distinct id so it
 // pins/groups side-by-side with stable, mirroring the app.name split above.
 if (IS_WIN) {
   const appUserModelId = identityFamily(app.getVersion()) === "nightly"
-    ? "com.amazon.kiro.crew.nightly" : "com.amazon.kiro.crew";
+    ? "dev.serejaris.kirocrew.codex.nightly" : "dev.serejaris.kirocrew.codex";
   app.setAppUserModelId(appUserModelId);
 }
 
@@ -311,8 +312,7 @@ function fetchHealthInfo(healthUrl = `${BACKEND_URL}${HEALTH_IDENTITY_PATH}`) {
 // Ask the OTHER channel app to quit through its normal lifecycle (its
 // before-quit stops its own gateway). Never kill the gateway out from under
 // its shell — the shell's exit watcher would treat that as a crash.
-// Targets by app NAME: both installs share one bundle identifier
-// (com.amazon.kiro.crew), so `quit app id` would be ambiguous.
+// Targets by app NAME so stable and nightly remain unambiguous.
 function quitOtherApp(appName) {
   return new Promise((resolve) => {
     if (process.platform !== "darwin") { resolve(false); return; }
@@ -621,7 +621,7 @@ function spawnGateway(resolve) {
         child.on("exit", (code, signal) => {
           glog(`gateway child exited code=${code} signal=${signal}`);
           if (signal === "SIGKILL") {
-            glog("HINT: SIGKILL on a freshly-spawned bundled binary almost always means macOS Gatekeeper blocked an unsigned/quarantined nested executable. On the recipient's Mac run: xattr -cr <path to KiroCrew.app>");
+            glog("HINT: SIGKILL on a freshly-spawned bundled binary almost always means macOS Gatekeeper blocked an unsigned/quarantined nested executable. On the recipient's Mac run: xattr -cr <path to KiroCrewCodex.app>");
           }
           // Only the CURRENT child may mutate the shared state. A stale child's
           // late exit (e.g. the one recoverWedgedGateway just SIGKILLed) must be
@@ -2027,7 +2027,7 @@ function renameCurrentWindow() {
 // Guide the user to grant macOS Screen Recording permission when it has been
 // explicitly denied — the snip tool cannot capture any frame without it. Opens
 // the exact Privacy pane. Note: the granted entity must be the packaged
-// KiroCrew.app, not the terminal that launched a dev build.
+// KiroCrewCodex.app, not the terminal that launched a dev build.
 function showScreenPermissionDialog() {
   const pane = "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture";
   dialog
@@ -2101,9 +2101,8 @@ process.on("unhandledRejection", (reason) => {
 });
 
 app.whenReady().then(async () => {
-  // Debug-only per-process metrics recorder. No-ops unless KIROCREW_DEBUG is set,
-  // so a normal install pays nothing; when on, it writes a bounded rolling
-  // artifact next to the gateway log for `kirocrew desktop metrics` to read.
+  // The community distribution policy keeps this inherited recorder disabled,
+  // including when an old environment still sets KIROCREW_DEBUG.
   try {
     desktopMetricsRecorder = createMetricsRecorder({
       dir: path.dirname(gatewayLogPath()),
@@ -2475,6 +2474,9 @@ app.whenReady().then(async () => {
     Notification,
     getFlavor: () => "stable",
     getChannelPreference: () => store.get("updateChannel", ""),
+    // This community fork has no compatible signed CDN lane. Refuse the
+    // upstream feed so a future Amazon release cannot replace the Codex build.
+    updatesEnabled: false,
     // Once-per-version nudge: tell the user an update exists; downloading and
     // installing stay in Settings > About (the in-app dot guides them there).
     notifyUpdateFound: (version) => {

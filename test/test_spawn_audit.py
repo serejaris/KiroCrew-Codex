@@ -366,6 +366,17 @@ BENIGN_SPAWNS: frozenset[str] = frozenset(
         "mcp_gateway/manager.py::_spawn_once",
         "mcp_gateway/stub.py::main",
         "mcp_playwright_proxy.py::run_proxy",
+        # Codex App Server is the trusted provider host, equivalent to the ACP
+        # runtime process. Its binary is resolved from an operator override,
+        # PATH, or the ChatGPT app bundle; its fixed argv and configured
+        # workspace are never model-selected. Codex applies its native sandbox
+        # to model tool execution. Wrapping the host itself would hide the
+        # ChatGPT login it owns, so start() instead scrubs gateway channel
+        # credentials and applies the session-host resource-limit profile.
+        "providers/codex.py::start",
+        # Fixed operator prerequisite probe: resolved Codex binary plus literal
+        # `login status`; no agent-controlled argv or cwd reaches the child.
+        "providers/codex.py::probe_codex_readiness",
         # Read-only `git config` / `git ls-remote --get-url` resolving which
         # remote the update would fetch from, for the `updates.source` pin. Fixed
         # list-argv (no shell=True), no agent input: the branch lands mid-key

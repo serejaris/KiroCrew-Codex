@@ -2,7 +2,13 @@
   <img src="assets/banner.svg" alt="Kiro Crew. Keep work moving. Runs on your hardware, remembers across sessions, keeps working unattended.">
 </p>
 
-<h1 align="center">Kiro Crew</h1>
+<h1 align="center">KiroCrew Codex Edition</h1>
+
+> **Unofficial community fork.** This repository is based on
+> [KiroCrew v0.1.3](https://github.com/kirodotdev/KiroCrew/releases/tag/v0.1.3)
+> and adds an OpenAI Codex provider that works with an existing Codex login.
+> It is maintained by [Sereja Ris](https://github.com/serejaris) and is not
+> affiliated with or endorsed by Amazon or OpenAI.
 
 <p align="center">
   <strong>A persistent workspace for development work that self-improves and continues beyond one session.</strong>
@@ -20,7 +26,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/kirodotdev/KiroCrew/releases"><img src="https://img.shields.io/badge/Download-macOS%20%7C%20Linux-2f6feb?style=flat-square" alt="Download Kiro Crew for macOS or Linux"></a>
+  <a href="https://github.com/serejaris/KiroCrew-Codex/releases"><img src="https://img.shields.io/badge/Release-source-2f6feb?style=flat-square" alt="Download the KiroCrew Codex source release"></a>
   <a href="docs/README.md"><img src="https://img.shields.io/badge/Documentation-1f6feb?style=flat-square" alt="Read the documentation"></a>
   <a href="docs/install.md"><img src="https://img.shields.io/badge/Install%20guide-macOS%20%7C%20Linux%20%7C%20Windows-6e7781?style=flat-square" alt="Install guide for macOS, Linux, and Windows"></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/Contributing-238636?style=flat-square" alt="Contributing guide"></a>
@@ -36,90 +42,36 @@
   <a href="#how-it-works">How it works</a> ·
   <a href="#security-and-control">Security</a> ·
   <a href="#install-configure-and-operate">Install</a> ·
-  <a href="#anonymous-usage-telemetry">Telemetry</a> ·
+  <a href="#telemetry">Telemetry</a> ·
   <a href="#docs-and-contributing">Docs</a>
 </p>
 
 ## Quick start
 
-You choose how to run Kiro Crew: the desktop app with automatic updates, a
-one-line install on your machine or a remote host, the Docker image for
-always-on servers, or a build from source. Every path runs on `kiro-cli`
-underneath, so the first launch installs it if needed and guides Kiro
-device-code sign-in.
-
-### App downloads
-
-The desktop app starts a bundled Gateway when no local Gateway is already
-running, updates itself on the channel you download, and can connect to a
-remote Gateway over an SSH tunnel. See the
-[desktop app guide](docs/desktop-app.md).
-
-- **macOS**: [Stable](https://download.crew.kiro.dev/desktop/stable/latest/KiroCrew.dmg) | [Insider](https://download.crew.kiro.dev/desktop/insider/latest/KiroCrew.dmg) | [Nightly](https://download.crew.kiro.dev/desktop/nightly/latest/KiroCrew.dmg)
-- **Linux**: [Stable](https://download.crew.kiro.dev/desktop/stable/latest/KiroCrew-x86_64.AppImage) | [Insider](https://download.crew.kiro.dev/desktop/insider/latest/KiroCrew-x86_64.AppImage) | [Nightly](https://download.crew.kiro.dev/desktop/nightly/latest/KiroCrew-x86_64.AppImage)
-- **Windows**: no desktop build yet, so run the Gateway from a [source install](#build-from-source) and open the dashboard in your browser
-
-### One-line install
-
-Install the prebuilt, SHA-256-verified wheel from the release CDN without
-cloning the repository or running `npm` and a local build.
-
-Stable, the default:
-
-```bash
-curl -fsSL https://download.crew.kiro.dev/cli.sh | sh
-```
-
-Track a faster channel, `insider` or `nightly`:
-
-```bash
-curl -fsSL https://download.crew.kiro.dev/cli.sh | sh -s -- --channel insider
-```
-
-Pin an exact version:
-
-```bash
-curl -fsSL https://download.crew.kiro.dev/cli.sh | sh -s -- --version 0.1.0
-```
-
-Open `http://localhost:5476` and start a conversation. The web dashboard works
-without messaging credentials. Add [Slack](docs/slack-setup.md),
-[Telegram](src/kiro_crew/docs/telegram-integration.md), or
-[WeCom](src/kiro_crew/docs/wecom-integration.md) when you want to continue
-working with the same agent away from the dashboard. These channels connect
-outbound, so you do not need to expose the dashboard port publicly.
-
-### Docker
-
-For always-on servers, the Gateway ships as a public multi-arch image on GHCR:
-
-```bash
-docker run -d --name kirocrew \
-  -p 127.0.0.1:5476:5476 \
-  -v kirocrew-home:/home/kirocrew \
-  ghcr.io/kirodotdev/kirocrew:stable
-```
-
-See the [Docker guide](docs/docker.md) for first-run login, channel tags, and
-the container security model.
+This fork is distributed as source. It does not use the upstream KiroCrew
+update feed and does not publish Amazon-signed desktop binaries. Build it from
+source, then select the `codex` provider. The provider speaks the official
+Codex App Server protocol and reuses the Codex login already available from the
+Codex CLI or ChatGPT desktop app.
 
 ### Build from source
 
-macOS and Linux require Python 3.10+, Node.js 18+, npm, and
-[`kiro-cli`](https://kiro.dev/docs/cli/). The first desktop or dashboard launch
-can install Kiro CLI on the Gateway host and guide device-code sign-in before
-chat opens. Windows is supported through a native source install; follow the
+macOS and Linux require Python 3.10+, Node.js 18+, npm, and a logged-in Codex
+CLI. The bundled Codex executable in the ChatGPT desktop app is discovered
+automatically on macOS. Kiro CLI remains an optional provider. Windows is
+supported through a native source install; follow the
 [Windows guide](docs/windows-install.md) instead of the shell steps below.
 
 ```bash
 # 1. Clone and build Kiro Crew
-git clone https://github.com/kirodotdev/KiroCrew.git
-cd KiroCrew
+git clone https://github.com/serejaris/KiroCrew-Codex.git
+cd KiroCrew-Codex
 make build
 source .venv/bin/activate
 
 # 2. Configure, verify, and start
-kirocrew setup
+kirocrew config set agent.provider codex
+kirocrew config set agent.model auto
 kirocrew doctor
 kirocrew gateway
 ```
@@ -197,8 +149,8 @@ security policy, messaging connections, and the dashboard.
 The current runtime places the Gateway, agent sessions, ACP processes, and state
 on the same host. Run Kiro Crew on your Mac, inside a container on your machine,
 or on a remote Linux host you control. Conversation history, memory, and
-knowledge indexes remain on that host. Model requests are handled by `kiro-cli`
-and follow the account and model configuration you use there.
+knowledge indexes remain on that host. Model requests are handled by the active
+provider and follow the account and model configuration used by Codex or Kiro.
 
 **Gateway.** The Gateway is the long-running Kiro Crew process. It routes
 messages from the desktop app, web, CLI, and the messaging surfaces listed below. It persists
@@ -212,11 +164,11 @@ subagents also use managed sessions. These sessions preserve conversation
 context and can run concurrently before returning results to a parent session or
 configured surface.
 
-**ACP runtime and turns.** Kiro Crew supports both a dedicated `kiro-cli` ACP
-process for a session and a shared ACP runtime that multiplexes multiple session
-handles. During each turn, the session sends a prompt, streams model and tool
-events, resolves approvals, and returns the final result. An agent session is a
-logical isolation boundary, not necessarily one OS process.
+**Provider runtimes and turns.** Kiro Crew supports the official Codex App
+Server and the optional `kiro-cli` ACP runtime. During each turn, the session
+sends a prompt, streams model and tool events, resolves approvals, and returns
+the final result. An agent session is a logical isolation boundary, not
+necessarily one OS process.
 
 **Use the surface that fits the moment.**
 
@@ -291,20 +243,14 @@ chat. Read the [security architecture](docs/security-deep-dive.md) and use
 
 ## Install, configure, and operate
 
-**Installer details.** The installer resolves the channel feed, verifies the wheel's SHA-256 against
-the published manifest, installs through `pipx` when available or a managed
-virtual environment at `~/.kiro/crew/venv`, and records the channel in
-`~/.kiro/crew/channel`. The channels are `stable`, `insider`, and `nightly`, and
-`KIROCREW_CHANNEL` sets the default.
-
-**Pin an exact wheel.** You can also install one exact wheel directly and pin it to its published
-SHA-256. Every version directory publishes a `SHA256SUMS` file next to the
-wheel, so take the hash for your wheel from there and put it in the URL
-fragment. `pip` verifies the hash and does not consult a package index for
-Kiro Crew itself:
+**Source release.** Clone a tagged GitHub source archive for a reproducible
+checkout, then build locally. The community fork publishes no installer, wheel
+feed, container image, or signed desktop binary. A local wheel can be produced
+and inspected with:
 
 ```bash
-pip install "https://download.crew.kiro.dev/cli/stable/<version>/kirocrew-<version>-py3-none-any.whl#sha256=<sha256>"
+make wheel
+python -m pip install dist/kirocrew-*.whl
 ```
 
 **Semantic memory.** Semantic memory needs no setup. Embeddings run in-process, and the Gateway
@@ -325,16 +271,8 @@ and chat surfaces connect to that Gateway.
 |---|---|---|
 | **Mac app, local** | Install or build the desktop app with `make desktop` | The app starts its bundled Gateway. Agent sessions, ACP processes, and `~/.kiro/crew` stay on your Mac. |
 | **Native local** | `make build`, or install a wheel from `make wheel` | The Gateway and agent runtime run directly on your macOS, Linux, or Windows machine. |
-| **Local container** | Run `ghcr.io/kirodotdev/kirocrew` and persist `/home/kirocrew` | The Gateway and agent runtime run inside the official multi-arch container on your machine. |
 | **Remote hardware** | Follow the [remote host guide](docs/remote-desktop-setup.md) and install the service | The Gateway, agent sessions, and state run continuously on your Linux server, home lab, or cloud instance. Connect the desktop app or browser through an SSH tunnel. |
 | **Windows source install** | Follow [the Windows guide](docs/windows-install.md) | The Gateway, agent sessions, chat, cron, and dashboard run natively with documented feature limits. |
-
-For containers, mount the directory selected by `KIROCREW_HOME` so sessions,
-configuration, memory, and credentials survive replacement. Keep the Gateway
-port bound to loopback unless you intentionally configure authenticated remote
-access. Container isolation and the Kiro Crew OS sandbox are separate layers
-and depend on the host runtime configuration. See the
-[Docker guide](docs/docker.md) for the published image and deployment details.
 
 **Keep it running.** Install a systemd service on Linux or a launchd agent on
 macOS:
@@ -370,10 +308,17 @@ main configuration with `kirocrew config get`, `set`, and `edit`.
 }
 ```
 
-`agent.provider` is fixed to `acp`. Kiro Crew drives `kiro-cli` over the Agent
-Client Protocol. Set the dashboard port with `KIROCREW_PORT` or
+`agent.provider` accepts `acp` and `codex`. The `codex` provider drives the
+official Codex App Server and reuses `codex login` / the ChatGPT desktop login;
+it does not require a Kiro account. Set the dashboard port with `KIROCREW_PORT` or
 `kirocrew gateway --port <n>`. Slack credentials live in `~/.kiro/crew/.env`
 rather than the JSON config.
+
+```bash
+kirocrew config set agent.provider codex
+kirocrew config set agent.model gpt-5.6-sol
+codex login status
+```
 
 **Troubleshoot quickly.** Start with `kirocrew doctor`. For an ACP timeout,
 confirm `kiro-cli` is on `PATH` and logged in, then allow extra time for the
@@ -381,86 +326,12 @@ first MCP startup. For memory search, check that the embedding
 model finished downloading under `~/.kiro/crew/models`. For a stale MCP configuration, run
 `kirocrew setup --agent-only`, or add `--clean` to rebuild it.
 
-## Anonymous usage telemetry
+## Telemetry
 
-Kiro Crew sends **one anonymous heartbeat per day** so maintainers can see how
-many copies are actively running, which versions are in use, and which
-platforms and install channels to support. After a successful install or update
-from the official app catalog, it also sends one anonymous per-app receipt.
-Both signals are on by default and use the same controls below.
-
-To turn it off, flip **Settings → Privacy → Send anonymous usage heartbeat** in
-the dashboard (the same switch appears on the last step of first-run
-onboarding). Or from a terminal:
-
-```bash
-kirocrew telemetry disable        # persists to config.json
-export KIROCREW_TELEMETRY_DISABLED=1   # or per-shell / per-container
-kirocrew telemetry status         # print exactly what would be sent
-```
-
-The toggle and `kirocrew telemetry disable` write the same setting, so either
-one sticks across restarts and upgrades. `KIROCREW_TELEMETRY_DISABLED` overrides
-both — when it is set, the dashboard toggle is disabled and says so.
-
-**Exactly these five fields are sent, at most once per day, and nothing else:**
-
-| Field | Example | Why |
-|-------|---------|-----|
-| Random instance id | `9c75560d…` (UUID4) | Lets us count how many copies ran on a given day. Generated once on first run and derived from nothing — not your hostname, username, MAC, IP, or any account. It identifies an installed copy, never a person. |
-| App version | `0.1.2` | Which releases are still in use. **Release number only** — build stamps like `-nightly.20260731t065756` are stripped before sending, because a per-build timestamp is near-unique and would help identify a specific machine. |
-| Python minor version | `3.12` | When the minimum can move up |
-| Install channel | `dmg` | Which install path people actually use |
-| First-run flag | `1` / `0` | New installs vs returning |
-
-**Official-app install receipts are separate and event-based.** After a
-successful official-catalog install or update, Kiro Crew sends one GET to
-`/b/1/install/<app-slug>?t=<token>&k=<fresh|update>&v=<release>` on the same
-telemetry host. The slug is the public catalog identifier. `t` is the first 32
-hex characters of HMAC-SHA256 keyed by the local beacon install id over
-`app-install:<slug>`; the raw install id is never sent, and tokens for different
-apps cannot be linked to assemble an installed-app profile. `k` separates fresh
-installs from updates, and `v` is the same release-only Kiro Crew version clamp
-used by the heartbeat.
-
-Receipts are emitted only for bundled or edition-provided official catalog
-entries. Apps from user-configured registries, local-directory installs, and
-self-registered apps emit nothing, so private app names never leave the machine.
-If no persistent beacon install id exists yet, the receipt is skipped.
-
-This list used to be nine fields. Release channel, OS, CPU architecture and
-governance posture were **removed** — each was coarse on its own, but the
-instance id is stable, so those attributes all describe the *same* copy and
-together they narrowed the group any one install blends into far more than any
-single field suggests.
-
-We report this as **Daily Active Instances** rather than "users": with no account
-system there is no way to resolve a copy to a person, so one person running
-Kiro Crew on three machines counts as three.
-
-**Never sent:** your prompts, model responses, file contents, file paths, repo
-or branch names, credentials, environment variables, hostname, username, or IP
-address. The receiving CDN is configured **not to log client IP addresses** — the
-log delivery does not include that field, so no IP is stored at all.
-
-**Automatically off** in CI, and whenever `KIROCREW_HOME` points somewhere other
-than `~/.kiro/crew` (dev instances and pods are never counted).
-
-**Enterprise administrators can pin it off entirely.** A `capabilities.telemetry`
-entry in the security policy blocks both outbound signals regardless of the local
-setting, and the dashboard toggle then says so instead of offering a change that
-would not take effect:
-
-```json
-{"version": 1, "boot": {"fail_closed": true},
- "capabilities": {"telemetry": {"enabled": false}}}
-```
-
-See [docs/system-specs/modules/governance.md](docs/system-specs/modules/governance.md).
-
-This is separate from `telemetry.enabled`, which controls **local-only**
-performance metrics that never leave your machine. See
-[docs/system-specs/modules/metrics.md](docs/system-specs/modules/metrics.md).
+KiroCrew Codex Edition collects and sends no product telemetry. The inherited
+anonymous heartbeat, app-install receipts, local OpenTelemetry/JSONL metrics,
+and OTLP export are hard-disabled. Old config values and environment variables
+cannot enable them.
 
 ## Docs and contributing
 
@@ -473,7 +344,7 @@ performance metrics that never leave your machine. See
 | Trust and dependencies | [Security](docs/security-deep-dive.md), [Security policy](SECURITY.md) |
 | Project work | [Contributing](CONTRIBUTING.md), [Tenets](TENETS.md), [Governance](GOVERNANCE.md), [Maintainers](MAINTAINERS.md), [AI assistant rules](AGENTS.md), [Changelog](CHANGELOG.md) |
 
-Contributions are welcome. Create a branch from `main`, keep changes focused,
+Contributions are welcome. Create a branch from `codex-main`, keep changes focused,
 and run the relevant checks before opening a pull request:
 
 ```bash
@@ -488,7 +359,7 @@ npm run check
 npm run build
 ```
 
-Use [GitHub Issues](https://github.com/kirodotdev/KiroCrew/issues) for bugs and
+Use [GitHub Issues](https://github.com/serejaris/KiroCrew-Codex/issues) for bugs and
 feature requests. Do not file security vulnerabilities publicly.
 
 
@@ -830,4 +701,5 @@ to be added, corrected, or removed, please open an issue or a pull request.
 ## License
 
 Kiro Crew is licensed under the [Apache License 2.0](LICENSE). See
-[NOTICE](NOTICE) for attribution information.
+[NOTICE](NOTICE) for upstream attribution and the community-fork modification
+notice.

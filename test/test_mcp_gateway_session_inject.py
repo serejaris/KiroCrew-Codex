@@ -5,9 +5,9 @@ The pooling mechanism under test: kiro-cli honours a server injected in
 injecting broker stubs pools an agent's servers without writing a spec into the
 user's project, their ``~/.kiro/agents/``, or a bind mount.
 
-``test_real_kiro_cli_prefers_session_injected_server`` is the anti-drift guard:
-that precedence is verified but undocumented, so it is pinned against the
-shipped binary whenever one is on PATH.
+``test_real_kiro_cli_prefers_session_injected_server`` is the optional anti-drift
+guard for the legacy backend. Set ``KIROCREW_RUN_KIRO_INTEGRATION=1`` to run it
+against an installed and authenticated Kiro CLI.
 """
 
 from __future__ import annotations
@@ -187,6 +187,7 @@ def test_non_dict_server_entry_is_skipped(tmp_path):
 
 
 REAL_CLI = shutil.which("kiro-cli")
+RUN_KIRO_INTEGRATION = os.environ.get("KIROCREW_RUN_KIRO_INTEGRATION") == "1"
 
 #: A probe MCP server that records that it launched and then lingers, in place
 #: of ``sh -c "touch X; sleep 20"``. The interpreter is portable where a POSIX
@@ -239,7 +240,10 @@ p.kill()
 """
 
 
-@pytest.mark.skipif(not REAL_CLI, reason="kiro-cli not on PATH")
+@pytest.mark.skipif(
+    not REAL_CLI or not RUN_KIRO_INTEGRATION,
+    reason="set KIROCREW_RUN_KIRO_INTEGRATION=1 with an authenticated kiro-cli",
+)
 def test_real_kiro_cli_prefers_session_injected_server():
     """ANTI-DRIFT GUARD. Pins the undocumented precedence pooling relies on.
 

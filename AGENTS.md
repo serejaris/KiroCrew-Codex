@@ -5,11 +5,15 @@ frontend has its own `website/AGENTS.md`). Read it before non-trivial changes.
 
 ## What this is
 
+This checkout is the unofficial `serejaris/KiroCrew-Codex` community fork.
+Its default branch is `codex-main`. Releases are source-only previews, all
+telemetry is hard-disabled, and the Amazon update/signing/CDN lanes are outside
+this fork's release boundary.
+
 KiroCrew is an open-source personal AI agent that runs on your own machine —
 chat from Slack, a web dashboard, or the CLI; run multi-step tasks unattended;
-schedule cron jobs; persist memory across sessions. It drives an LLM through the
-KiroACP provider — the ACP adapter running the `kiro-cli` backend over the ACP
-JSON-RPC protocol — plus MCP tools.
+schedule cron jobs; persist memory across sessions. It drives an LLM through
+Kiro ACP (`kiro-cli`) or the official OpenAI Codex App Server, plus MCP tools.
 
 - **Backend:** Python package `kiro_crew` in `src/kiro_crew/`.
 - **Frontend:** React + TS + Vite SPA in `website/`; built `dist/` is staged into
@@ -38,14 +42,16 @@ changing code, **never reintroduce** any of the following:
   `dashboard/handlers/sso_login.py`, `tunnel/manager.py`, `aim_agents.py`): their
   public symbols are preserved as no-ops so the import graph stays intact — keep
   them stubbed.
-- KiroCrew is **KiroACP-only**: the sole provider is the ACP adapter driving
-  `kiro-cli` (`agent.provider` is fixed to `acp`; kiro-cli REQUIRED). The
+- KiroCrew supports two public providers: `acp` drives `kiro-cli`, and `codex`
+  drives the official OpenAI Codex App Server using the user's existing Codex
+  login. Keep provider selection, native session resume, model discovery,
+  approvals, token usage, and prerequisite gates working for both. The
   standalone `ClaudeCodeProvider`/`BedrockProvider`/`cc_agent`/`mirror` modules,
   the `claude_code`/`bedrock` factory branches, the `cc_*`/`bedrock_*` config
   fields, and the `[aws]` extra are gone. The dormant `ACP_BACKEND_CLAUDE` /
   `_is_claude` seam in `acp/client.py` is intentionally kept so an internal
-  companion can re-register Claude Code — do NOT delete it, and do NOT re-add the
-  public registration glue.
+  companion can re-register Claude Code — do NOT delete it, and do NOT re-add
+  the removed standalone Claude/Bedrock registration glue.
 - OSS-flipped defaults (keep): embeddings are **always-on and in-process**
   (vendored llama-cpp-python under `_vendor/`; Qwen3 GGUF over sha256-pinned HTTPS
   from the KiroCrew CDN, override via `KIROCREW_EMBED_MODEL_URL` /
@@ -265,7 +271,7 @@ All integration tests MUST pass before committing frontend changes.
 
 ## Git Conventions
 
-- **This repo lives on GitHub; `main` is the default branch.** Changes land through the standard GitHub Pull Request flow — branch off `main`, push, open a PR, let CI + review pass, then merge. See [CONTRIBUTING.md](CONTRIBUTING.md) → "Pull Request Workflow" for the full steps. This is a public OSS project — there is no Brazil/GitFarm or `cr` review path.
+- **This repo lives on GitHub; `codex-main` is the default branch.** Changes land through the standard GitHub Pull Request flow — branch off `codex-main`, push, open a PR, let CI + review pass, then merge. See [CONTRIBUTING.md](CONTRIBUTING.md) → "Pull Request Workflow" for the full steps. This is a public OSS project — there is no Brazil/GitFarm or `cr` review path.
 - Do NOT proactively `git commit` or `git push` — only when explicitly requested by the user
 - Do NOT run `git push` unless the user explicitly says to push. Committing is OK when asked, but pushing requires separate explicit approval.
 
@@ -350,9 +356,10 @@ Jane Doe (janedoe), John Smith (jsmith)
 ## Architecture Principles
 
 - LLMProvider ABC is the interface for all LLM backends (`providers/base.py`)
-- ACP provider wraps kiro-cli (JSON-RPC 2.0 over stdio) — full tool execution, session management, and auto-compaction. Backend selection:
-  - `"acp"` (required): spawns `kiro-cli acp --agent <name>`
-- Config-driven provider selection: `"provider": "acp"` (kiro-cli) is fixed/required
+- Providers implement `LLMProvider` over JSON-RPC stdio:
+  - `"acp"`: spawns `kiro-cli acp --agent <name>`
+  - `"codex"`: spawns the official `codex app-server` and reuses Codex authentication
+- Config-driven provider selection accepts `"provider": "acp"` or `"provider": "codex"`
 - Tool permissions auto-approved in phase 1; interactive approval in phase 3
 - Config loaded from `~/.kiro/crew/config.json` with dataclass defaults
 - CLI uses `argparse` (stdlib only, no external deps)

@@ -50,7 +50,7 @@ logger = logging.getLogger("kiro_crew.config.loader")
 # Fields with enum constraints and their allowed values
 _ENUM_FIELDS: list[tuple[str, str, list[str]]] = [
     ("agent", "approval_mode", ["auto", "interactive"]),
-    ("agent", "provider", ["acp"]),
+    ("agent", "provider", ["acp", "codex"]),
     ("agent", "sandbox", ["auto", "off"]),
     ("agent", "log_level", ["DEBUG", "INFO", "WARNING", "ERROR"]),
     ("memory", "embedding_provider", ["llama_cpp"]),
@@ -336,7 +336,7 @@ _agent_config_st = st.builds(
     approval_mode=st.sampled_from(["auto", "interactive"]),
     streaming=st.booleans(),
     model=st.text(min_size=0, max_size=20),
-    provider=st.just("acp"),
+    provider=st.sampled_from(["acp", "codex"]),
     default_agent=st.text(min_size=0, max_size=20),
     sandbox=st.sampled_from(["auto", "off"]),
     soft_stop_budget_secs=st.floats(min_value=0.5, max_value=60.0),

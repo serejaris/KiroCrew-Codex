@@ -434,6 +434,7 @@ def _doctor(platform_boot_error: "Exception | None" = None) -> None:
 
     print("Kiro Crew Doctor 👻\n")
     issues: list[str] = []
+    cfg = KiroCrewConfig.load()
 
     # ── Platform edition ──
     # Report the composed profile, and surface a boot-composition failure as a
@@ -484,11 +485,35 @@ def _doctor(platform_boot_error: "Exception | None" = None) -> None:
 
     # ── Dependencies ──
     print("Dependencies")
-    # kiro-cli is THE agent backend for the public build. claude-agent-acp is
-    # only the dormant protocol seam (re-registered by an internal companion),
-    # so report it as optional and report kiro-cli as the backend.
     kiro = shutil.which(KIRO_CLI_BIN)
-    if kiro:
+    if cfg.agent.provider == "codex":
+        from kiro_crew.providers.codex import resolve_codex_bin
+
+        codex = resolve_codex_bin()
+        if Path(codex).is_file() or shutil.which(codex):
+            print(f"  codex:       ✅ {codex}")
+            try:
+                login = subprocess.run(
+                    [codex, "login", "status"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                login_text = (login.stdout or login.stderr).strip()
+                if login.returncode == 0:
+                    print(f"  codex login: ✅ {login_text or 'authenticated'}")
+                else:
+                    print("  codex login: ❌ run: codex login")
+                    issues.append("codex login")
+            except Exception:
+                print("  codex login: ⚠️  could not check")
+        else:
+            print("  codex:       ❌ not found")
+            print("               Install Codex CLI or set KIROCREW_CODEX_BIN")
+            issues.append("codex")
+        if kiro:
+            print(f"  kiro-cli:    ⏭  {kiro} (optional; Codex provider is active)")
+    elif kiro:
         print(f"  kiro-cli:    ✅ {kiro}")
         # Check login status — best-effort, never a hard failure
         try:
@@ -584,7 +609,6 @@ def _doctor(platform_boot_error: "Exception | None" = None) -> None:
     # ── Config ──
     print("\nConfiguration")
     cfg_dir = config_dir()
-    cfg = KiroCrewConfig.load()
     if cfg_dir.exists():
         print(f"  config dir:  ✅ {cfg_dir}")
     else:
@@ -846,7 +870,24 @@ def _doctor(platform_boot_error: "Exception | None" = None) -> None:
 
     # ── Connectivity ──
     print("\nConnectivity")
-    if kiro:
+    if cfg.agent.provider == "codex":
+        from kiro_crew.providers.codex import resolve_codex_bin
+
+        codex = resolve_codex_bin()
+        try:
+            codex_result = subprocess.run(
+                [codex, "--version"], capture_output=True, text=True, timeout=5
+            )
+            if codex_result.returncode == 0:
+                version = codex_result.stdout.strip() or codex_result.stderr.strip()
+                print(f"  codex:       ✅ {version}")
+            else:
+                print("  codex:       ❌ exits with error")
+                issues.append("codex executable")
+        except Exception:
+            print("  codex:       ❌ could not run")
+            issues.append("codex executable")
+    elif kiro:
         kiro_result = subprocess.run(
             [KIRO_CLI_BIN, "--version"], capture_output=True, text=True, timeout=5
         )

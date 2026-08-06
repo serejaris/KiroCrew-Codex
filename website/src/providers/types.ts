@@ -1,7 +1,4 @@
-// KiroCrew is KiroACP-only — kiro-cli over ACP is the sole provider. This is a
-// single-member union so the adapter interface below still type-checks for its
-// many consumers.
-export type ProviderId = 'acp'
+export type ProviderId = 'acp' | 'codex'
 
 export interface ProviderCapabilities {
   hooks: boolean

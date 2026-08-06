@@ -140,8 +140,8 @@ class TestOtelSdkImportIsDeferred:
             "a disabled recorder must not pay for the OTel SDK import"
         )
 
-    def test_enabled_recorder_still_loads_the_sdk(self, tmp_path: Path) -> None:
-        """The deferral must not break the opt-in path."""
+    def test_env_opt_in_cannot_enable_edition_telemetry(self, tmp_path: Path) -> None:
+        """The public Codex Edition hard-disable outranks legacy env consent."""
         result = _probe(
             "import json, sys\n"
             "import kiro_crew.metrics.provider as p\n"
@@ -153,8 +153,8 @@ class TestOtelSdkImportIsDeferred:
             "    'enabled': rec.enabled,\n"
             "}))\n"
         )
-        assert result["enabled"] is True
-        assert result["sdk"] is True
+        assert result["enabled"] is False
+        assert result["sdk"] is False
 
 
 # ── config_dir(): memoized resolution ─────────────────────────────────────

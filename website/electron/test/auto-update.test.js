@@ -215,6 +215,7 @@ function makeDeps(opts = {}) {
     // tests below drive these to the refused states.
     resourcesPath = "/Applications/Kiro Crew.app/Contents/Resources",
     bundleWritable = true,
+    updatesEnabled = true,
   } = opts;
   const calls = { setFeedURL: [], checkForUpdates: 0, downloadUpdate: 0, quitAndInstall: [] };
   const handlers = {};
@@ -250,6 +251,7 @@ function makeDeps(opts = {}) {
     // whatever the host filesystem happens to allow.
     probeBundleWritable: () => bundleWritable,
     feedBase: "https://cdn.example.dev/feed",
+    updatesEnabled,
     onUpdateState: (s) => states.push(s),
     log: { info: () => {}, warn: () => {}, error: () => {} },
   };
@@ -257,6 +259,16 @@ function makeDeps(opts = {}) {
   const stateNames = () => states.map((s) => s.state);
   return { deps, calls, handlers, emit, states, stateNames, appOnce, appRemoved };
 }
+
+test("community fork disables upstream updates before configuring a feed", async () => {
+  const { deps, calls } = makeDeps({ updatesEnabled: false });
+  const updater = initAutoUpdate(deps);
+  assert.strictEqual(updater.disabled, "community-fork");
+  assert.strictEqual(updater.getInfo().downloadUrl, null);
+  await updater.check();
+  assert.deepStrictEqual(calls.setFeedURL, []);
+  assert.strictEqual(calls.checkForUpdates, 0);
+});
 
 // ---------------------------------------------------------------------------
 // #709 regression guard: every state that renders a version must report the
@@ -880,15 +892,10 @@ test("install() proceeds once an update IS staged", async () => {
   assert.strictEqual(calls.quitAndInstall.length, 1);
 });
 
-test("BLOCKING-fix contract: package.json declares a publish entry so app-update.yml is emitted", () => {
-  // electron-updater's downloadUpdate() -> getOrCreateDownloadHelper() awaits
-  // configOnDisk -> readFile(app-update.yml). electron-builder only writes that
-  // file when a publish config exists (its repository-info fallback resolves
-  // null here). Without it, DISCOVERY works and every consented download throws
-  // ENOENT -- a dead updater that no unit test with a fake autoUpdater can see.
+test("community fork does not bake the upstream publish feed into the app", () => {
   const pkg = require("../package.json");
   const publish = pkg.build && pkg.build.publish;
-  assert.ok(Array.isArray(publish) && publish.length > 0, "build.publish must be a non-empty array");
-  assert.strictEqual(publish[0].provider, "generic");
-  assert.match(publish[0].url, /^https:\/\//, "baked publish url must be https");
+  assert.strictEqual(publish, undefined);
+  const main = require("node:fs").readFileSync(require("node:path").join(__dirname, "..", "main.js"), "utf8");
+  assert.match(main, /updatesEnabled:\s*false/);
 });

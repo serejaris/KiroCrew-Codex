@@ -772,7 +772,49 @@ def _cc_models(request: web.Request, configured_default: str = "") -> list[dict]
 
 
 async def api_models(request: web.Request) -> web.Response:
-    """GET /api/models — list available models from the live kiro-cli ACP session."""
+    """GET /api/models — list models from the configured provider."""
+    cfg = KiroCrewConfig.load()
+    if cfg.agent.provider == "codex":
+        from kiro_crew.providers.codex import CodexAppServerProvider
+
+        provider: CodexAppServerProvider | None = None
+        try:
+            state: DashboardState = request.app["state"]
+            for active in state.sessions.active_providers():
+                if isinstance(active, CodexAppServerProvider):
+                    provider = active
+                    break
+            owns_provider = provider is None
+            if provider is None:
+                candidate = cfg.create_provider_factory()("_models")
+                if not isinstance(candidate, CodexAppServerProvider):
+                    raise TypeError("configured Codex factory returned another provider")
+                provider = candidate
+                await provider.start()
+            try:
+                models = await provider.available_models()
+            finally:
+                if owns_provider:
+                    await provider.shutdown()
+            if not models:
+                return web.json_response(
+                    {
+                        "error": "model list returned empty",
+                        "code": "codex_model_list_empty",
+                    },
+                    status=503,
+                )
+            return web.json_response(models)
+        except Exception:
+            logger.warning("api_models: Codex model list unavailable", exc_info=True)
+            return web.json_response(
+                {
+                    "error": "model list unavailable",
+                    "code": "codex_model_list_unavailable",
+                },
+                status=503,
+            )
+
     # Signed-out gateways must never reach the spawn below. kiro-cli auto-opens
     # an interactive browser login for ANY subcommand run unauthenticated
     # (--no-interactive does not suppress it, and there is no opt-out env var),

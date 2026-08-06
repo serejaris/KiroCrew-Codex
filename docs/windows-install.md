@@ -51,7 +51,7 @@ on `PATH` can still confuse other tooling. Prefer a real CPython install.
 From a clone, in PowerShell:
 
 ```powershell
-git clone https://github.com/kirodotdev/KiroCrew.git
+git clone https://github.com/serejaris/KiroCrew-Codex.git
 cd kirocrew
 
 # Build the frontend first (optional but recommended) so the dashboard is bundled:

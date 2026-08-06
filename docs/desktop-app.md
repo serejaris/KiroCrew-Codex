@@ -1,5 +1,10 @@
 # KiroCrew Desktop App
 
+> KiroCrew Codex Edition uses the distinct application identity
+> `dev.serejaris.kirocrew.codex` / `KiroCrewCodex.app`, ships no signed binaries,
+> and disables the inherited updater. Signing, CDN, and channel sections later
+> in this document describe the upstream project and are retained as reference.
+
 The desktop app is an [Electron](https://www.electronjs.org/) shell that wraps
 the KiroCrew web dashboard and embeds a **self-contained Python backend**. The
 backend uses a [python-build-standalone](https://github.com/indygreg/python-build-standalone)
@@ -28,11 +33,11 @@ Output lands in **`website/electron/dist/`**:
 The electron-builder configuration lives in
 [`website/electron/package.json`](../website/electron/package.json):
 
-- **appId:** `dev.kirocrew.desktop`
-- **productName:** `KiroCrew`
-- macOS display name: `Kiro Crew` via `CFBundleDisplayName`; `CFBundleName`
+- **appId:** `dev.serejaris.kirocrew.codex`
+- **productName:** `KiroCrewCodex`
+- macOS display name: `KiroCrew Codex` via `CFBundleDisplayName`; `CFBundleName`
   remains aligned with `productName` because Electron uses it to locate the
-  `KiroCrew Helper` app bundles during startup
+  `KiroCrewCodex Helper` app bundles during startup
 - mac target: `dmg` (category `public.app-category.developer-tools`)
 - linux target: `AppImage` (category `Development`)
 

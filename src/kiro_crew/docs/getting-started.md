@@ -82,7 +82,8 @@ kirocrew gateway
 ```
 
 This starts the full server: Slack Socket Mode listener, web dashboard, cron
-scheduler, heartbeat, and auto-update checker. The dashboard opens at
+scheduler and provider runtime. The community edition's telemetry and upstream
+auto-updater are hard-disabled. The dashboard opens at
 `http://localhost:5476`.
 
 ### Chat Mode (CLI only)

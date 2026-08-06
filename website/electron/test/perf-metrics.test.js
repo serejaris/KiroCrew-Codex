@@ -18,6 +18,7 @@ function harness(overrides = {}) {
   const rec = createMetricsRecorder({
     dir: "/tmp/logs",
     env: { KIROCREW_DEBUG: "1" },
+    distributionAllowsTelemetry: true,
     getAppMetrics: () => [
       { pid: 1, type: "Browser", cpu: { percentCPUUsage: 3.5 }, memory: { workingSetSize: 100 } },
       { pid: 2, type: "Tab", cpu: { percentCPUUsage: 1.5 }, memory: { workingSetSize: 50 } },
@@ -48,12 +49,20 @@ test("the gate is off by default and nothing is written", () => {
   assert.strictEqual(h.writes.length, 0, "a non-debug install must write no artifact at all");
 });
 
+test("the Codex Edition policy wins over KIROCREW_DEBUG", () => {
+  const h = harness({ distributionAllowsTelemetry: false });
+  assert.strictEqual(h.rec.enabled, false);
+  assert.strictEqual(h.rec.start(), false);
+  assert.strictEqual(h.writes.length, 0);
+  assert.strictEqual(profilingEnabled({ KIROCREW_DEBUG: "1" }), false);
+});
+
 test("an explicit falsey value reads as off, not as merely-set", () => {
   for (const raw of ["0", "false", "no", "off", ""]) {
-    assert.strictEqual(profilingEnabled({ KIROCREW_DEBUG: raw }), false, `${raw} should be off`);
+    assert.strictEqual(profilingEnabled({ KIROCREW_DEBUG: raw }, true), false, `${raw} should be off`);
   }
   for (const raw of ["1", "true", "YES", " on "]) {
-    assert.strictEqual(profilingEnabled({ KIROCREW_DEBUG: raw }), true, `${raw} should be on`);
+    assert.strictEqual(profilingEnabled({ KIROCREW_DEBUG: raw }, true), true, `${raw} should be on`);
   }
 });
 

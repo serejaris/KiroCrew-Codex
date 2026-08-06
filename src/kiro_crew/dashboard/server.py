@@ -1832,7 +1832,8 @@ async def start_dashboard(
     # take seconds, which is what made the first-run setup chrome visible to
     # returning users. Fire-and-forget — a warm-up is never a boot dependency,
     # and the task is cancelled by the service's shutdown hook.
-    app["kiro_prerequisite_service"].warm_up()
+    if state.sessions.configured_provider != "codex":
+        app["kiro_prerequisite_service"].warm_up()
     state.load_folders()
     state.load_tags()
     app["port"] = port
@@ -3226,7 +3227,8 @@ async def start_api_server(
     # take seconds, which is what made the first-run setup chrome visible to
     # returning users. Fire-and-forget — a warm-up is never a boot dependency,
     # and the task is cancelled by the service's shutdown hook.
-    app["kiro_prerequisite_service"].warm_up()
+    if state.sessions.configured_provider != "codex":
+        app["kiro_prerequisite_service"].warm_up()
     state.load_folders()
     state.load_tags()
     app["port"] = port

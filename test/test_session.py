@@ -2963,8 +2963,8 @@ class TestCloseAllPersistence:
         # (AcpProvider exposes the work dir via _client._work_dir, not a bare
         # _work_dir attribute).
         mock_provider.cwd = "/tmp/test"
+        mock_provider.session_id = "sid-persist-test"
         mock_provider.client = MagicMock()
-        mock_provider.client._session_id = "sid-persist-test"
         mock_provider.client.backend = ""  # kiro-cli backend
 
         mgr._sessions["dashboard:slot0"] = _Session(provider=mock_provider)

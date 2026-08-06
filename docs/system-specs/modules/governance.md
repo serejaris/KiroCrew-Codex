@@ -1136,13 +1136,22 @@ scope growth without server-recorded grants is not covered by this decision.
 
 ### Anonymous telemetry — `capabilities.telemetry`
 
-The anonymous daily heartbeat and official-app install receipt (`beacon.py` and
-`apps/install_receipt.py`; full spec in [metrics.md](metrics.md) → "Anonymous
-outbound telemetry") are the repo's **only default-on egress family**. Both use
-fixed anonymous payloads and the same effective-enable ladder. They are governed
-by the `capabilities.telemetry` `SCOPE_CATALOG` capability row
+> **KiroCrew Codex Edition override.** Product telemetry is hard-disabled at
+> the distribution boundary. The backend heartbeat/install-receipt gate and
+> local/OTLP metrics gate are compiled off; Electron profiling is compiled off;
+> configuration and API writes that try to enable telemetry are rejected. The
+> inherited controls documented below remain as dormant upstream architecture
+> and as test seams. They cannot be activated by a user setting or environment
+> variable in this distribution.
+
+In upstream KiroCrew v0.1.3, the anonymous daily heartbeat and official-app
+install receipt (`beacon.py` and `apps/install_receipt.py`; full spec in
+[metrics.md](metrics.md)) were the default-on egress family. Both used fixed
+anonymous payloads and the same effective-enable ladder. They were governed by
+the `capabilities.telemetry` `SCOPE_CATALOG` capability row
 (`capability_default=True`, data-only shape — no `CONTRACT_VERSION` or evaluator
-change, mirroring the theme rows above).
+change, mirroring the theme rows above). The remainder of this section records
+that inherited design for maintainers auditing the dormant implementation.
 
 **Why a governance row when a Settings toggle already exists.** The toggle, the CLI
 and the `KIROCREW_TELEMETRY_DISABLED` env var are all *operator* controls: anyone on

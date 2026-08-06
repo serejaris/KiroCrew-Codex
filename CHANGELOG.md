@@ -2,6 +2,36 @@
 
 All notable changes to KiroCrew are documented in this file.
 
+## [0.2.0] — 2026-08-06
+
+### Features
+
+- **OpenAI Codex provider** — Run KiroCrew with an existing Codex or ChatGPT
+  login through the official Codex App Server. Kiro and Amazon accounts are
+  optional, while sessions, tools, approvals, model selection, usage reporting,
+  compaction, and resume continue to work through the common provider contract.
+- **Provider-aware setup** — The dashboard, doctor command, model picker, and
+  prerequisite gates now follow the configured provider and report actionable
+  Codex login status.
+- **Codex MCP bridge** — KiroCrew MCP server definitions, headers, disabled
+  tools, and approval rules are translated into Codex App Server configuration.
+
+### Fixes
+
+- Codex sessions retain their native thread identifiers across restart and pruning
+- Provider switches refresh dashboard labels and capabilities immediately
+- Codex subprocesses use the existing resource, environment, and process-tree guards
+
+### Docs
+
+- Added Codex setup, configuration, provider architecture, and troubleshooting guidance
+- Marked the release as an unofficial source-only community fork with upstream attribution
+- Disabled all telemetry collection/export and upstream auto-updates for the community fork
+
+### Contributors
+
+Sereja Ris (serejaris)
+
 ## [0.1.2] — 2026-07-30
 
 First public release of KiroCrew — an open-source personal AI agent that runs on

@@ -3,9 +3,14 @@
 Thanks for your interest in contributing! Kiro Crew is an open-source project and
 we welcome issues and pull requests.
 
+This repository is the unofficial KiroCrew Codex Edition community fork. Its
+default branch is `codex-main`; upstream KiroCrew remains at
+[`kirodotdev/KiroCrew`](https://github.com/kirodotdev/KiroCrew). Please open
+Codex-provider and fork-release issues here.
+
 ## Reporting Bugs and Requesting Features
 
-Open a [GitHub issue](https://github.com/kirodotdev/KiroCrew/issues). Before you
+Open a [GitHub issue](https://github.com/serejaris/KiroCrew-Codex/issues). Before you
 do, search the open issues, because the fastest resolution is often a thread that
 already exists.
 
@@ -22,9 +27,9 @@ it leaves room for an answer nobody had thought of.
 ## Finding Something to Work On
 
 Two labels mark work that is ready for someone outside the core team.
-[`good first issue`](https://github.com/kirodotdev/KiroCrew/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+[`good first issue`](https://github.com/serejaris/KiroCrew-Codex/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 is scoped small and does not assume much context.
-[`help wanted`](https://github.com/kirodotdev/KiroCrew/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[`help wanted`](https://github.com/serejaris/KiroCrew-Codex/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 is work the team wants done but is not doing right now.
 
 Before starting anything substantial, check whether someone is already on it and
@@ -38,16 +43,16 @@ tell you in a paragraph.
 - macOS or Linux (Windows is not supported by the `kiro-cli` backend)
 - Python ≥ 3.9
 - Node.js ≥ 18 and npm (for the frontend)
-- The `kiro-cli` agent on your `PATH`, logged in (`kiro-cli login`) — it is the
-  only LLM backend (`agent.provider = acp`)
+- A logged-in Codex CLI or the ChatGPT desktop app for `agent.provider = codex`
+- Optional: `kiro-cli` on `PATH` for `agent.provider = acp`
 - [Ollama](https://ollama.com) for memory and knowledge-library embeddings
 
 ## First-Time Setup
 
 ```bash
 # 1. Fork the repo on GitHub, then clone your fork
-git clone https://github.com/kirodotdev/KiroCrew.git
-cd kirocrew
+git clone https://github.com/serejaris/KiroCrew-Codex.git
+cd KiroCrew-Codex
 
 # 2. Build the frontend and bundle it into the package
 cd website
@@ -169,78 +174,26 @@ KIROCREW_HOME=.kirocrew-dev KIROCREW_PORT=6777 kirocrew token
 
 ## Releasing New Versions
 
-### The model
+KiroCrew Codex Edition publishes source-first GitHub releases from
+`codex-main`. Amazon's signing, CDN, installer, telemetry, and update lanes are
+not reused by the community fork.
 
-`main` is always the latest code, and deliberately not stable. Feature releases
-are cut as a **release branch** off `main` on 0.1 increments (`0.1.0` → `0.2.0`
-→ `0.3.0`).
-
-Once a branch is cut, **bug fixes for that release go on the release branch, not
-on `main`.** Each one produces a new release candidate — `0.2.0-rc.1`,
-`-rc.2`, … — published to the insider channel. **Stable is the last RC we judge
-stable enough, promoted by tagging that RC's commit — never rebuilt.** So
-`0.2.0-rc.5` becomes stable `0.2.0`: same commit, same bytes, a new tag.
-
-Hot patches bump the patch digit (`0.2.0` → `0.2.1`) and are also cut from the
-release branch.
-
-After each stable cut, do two things: **bump `main` by 0.1** (to `0.3.0`) so
-nightlies sort above what just shipped, and **merge the branch's fixes back into
-`main`** so they aren't stranded on the branch.
-
-### Channels
-
-| Channel | Built from | Who it's for |
-|---------|-----------|--------------|
-| nightly | `main` | us and contributors |
-| insider | release branch, RC tags | power users testing ahead |
-| stable | the promoted insider | everyone (client default) |
-
-Nightly installs **side by side** as its own app. Insider and stable are two
-update lanes of **one** production app, switchable in Settings.
-
-### Cutting a release
+### Cutting a source release
 
 ```bash
-# 1. Branch off main
-git switch -c release/0.2.0 origin/main
-git push -u origin release/0.2.0
-
-# 2. Tag RCs on the branch as fixes land → each publishes to insider
-git tag -a v0.2.0-rc.1 -m "0.2.0 rc1" && git push origin v0.2.0-rc.1
-#    ... fixes land on release/0.2.0 ... then v0.2.0-rc.2, -rc.3, …
-
-# 3. Promote: tag the good RC's COMMIT with a bare version → stable
-git tag -a v0.2.0 -m "release 0.2.0" <rc-commit-sha>
-git push origin v0.2.0
-
-# 4. Bump main to 0.3.0 (PR), and merge the branch's fixes back into main
-
-# Hot patch: fix on the release branch, then
-git tag -a v0.2.1 -m "release 0.2.1" && git push origin v0.2.1
+# 1. Update CHANGELOG.md and the three version manifests below.
+# 2. Run the complete backend, frontend, Electron, type, lint, security,
+#    packaging, and live Codex smoke gates.
+# 3. Commit with a Conventional Commit.
+git tag -a vX.Y.Z-codex.N -m "KiroCrew Codex Edition X.Y.Z preview N"
+git push origin codex-main
+git push origin vX.Y.Z-codex.N
+gh release create vX.Y.Z-codex.N --prerelease --generate-notes
 ```
 
-Update `CHANGELOG.md` with a `## [X.Y.Z] — YYYY-MM-DD` section as part of the
-release (see AGENTS.md → "Release Changelog" for the format), and land the
-changelog and any version bump through a normal PR — never push to `main` or a
-release branch directly.
-
-### How builds are triggered
-
-**Nightly** runs on a schedule every night and can be kicked off on demand at any
-time. **Insider and stable are triggered by pushing a version tag** — an RC tag
-publishes to insider, a plain version tag publishes to stable.
-
-The release branch, the RC numbering, the promote decision, and the back-merge
-are all **human process**. The pipeline only reacts to the tag.
-
-Each build ships a signed and notarized macOS app, a Linux AppImage, a pip
-wheel, and a Docker image. A channel's update feed is repointed **last**, after
-its artifacts are verified downloadable, and clients only install with the
-user's consent. Windows builds but is not yet signed or published.
-
-**There is no rollback — we roll forward by cutting a new version.** Published
-CDN keys are immutable and are never overwritten.
+The release notes must state that the release contains source archives only.
+Unsigned desktop artifacts are not attached. Update `CHANGELOG.md` with a
+`## [X.Y.Z] — YYYY-MM-DD` section using the format in AGENTS.md.
 
 ### Bumping the in-code version
 
@@ -254,24 +207,8 @@ is what makes nightlies read as previews of the *next* release:
 | `pyproject.toml` | `[project] version` — what the wheel carries |
 | `website/electron/package.json` | `version` — the updater's version compare |
 
-Keep it a bare `X.Y.Z`: `nightly.yml` builds both a semver and a PEP 440 stamp
-from it, and a suffixed base (`.dev0`) produces invalid versions.
-
-### One trap worth knowing
-
-Any two prerelease tags sharing a base and a trailing number collapse onto the
-same PEP 440 wheel version — `v0.2.0-rc.1` and `v0.2.0-insider.1` both map to
-`0.2.0rc1`. The second publish then fails as a republish of an immutable key, so
-**stick to one prerelease convention (`-rc.N`) per base version.**
-
-Full detail: [docs/release-automation.md](docs/release-automation.md) (as-built
-operational reference for the pipeline) and
-[docs/release-process-design.md](docs/release-process-design.md) (design +
-platform-lane contract).
-
-For the branch, channel, and RC model behind these steps — where the tag goes
-and how insider becomes stable — see
-**[docs/release-process.md](docs/release-process.md)**.
+Keep the manifest version a bare `X.Y.Z`. The Git tag carries the
+`-codex.N` prerelease marker.
 
 ## Project Structure
 
@@ -388,10 +325,10 @@ instead of describing the steps yourself.
 ## Pull Request Workflow
 
 1. **Fork** the repository on GitHub.
-2. **Branch** from `main`:
+2. **Branch** from `codex-main`:
    ```bash
    git fetch origin
-   git checkout -b feat/my-feature origin/main
+   git checkout -b feat/my-feature origin/codex-main
    ```
 3. **Make your change** and add tests (new functions/components should be tested).
 4. **Run the checks locally** before opening a PR:
@@ -400,7 +337,7 @@ instead of describing the steps yourself.
    cd website && npm run check && cd ..     # frontend: typecheck + lint + tests
    ```
 5. **Commit** using [Conventional Commits](https://www.conventionalcommits.org/)
-   (see below), push to your fork, and open a **Pull Request against `main`**.
+   (see below), push to your fork, and open a **Pull Request against `codex-main`**.
 6. A maintainer will review. Address feedback by pushing additional commits to
    your branch.
 
@@ -417,37 +354,12 @@ anything that would be expensive to reverse. Everything else skips it, and a bug
 fix should never wait on a design document. If you are unsure which side of the
 line your change falls on, open an issue and ask.
 
-### CI checks on your PR (forks vs. direct branches)
+### CI checks on your PR
 
-GitHub deliberately withholds repository secrets and OIDC credentials from
-workflows triggered by **pull requests opened from a fork**. Three of our
-checks need those credentials to reach Amazon Bedrock, so their behaviour
-depends on *where your branch lives*:
-
-| Check | Fork PR | Branch pushed to `kirodotdev/KiroCrew` |
-| --- | --- | --- |
-| **Opus 5 Review** | Skipped (neutral — not a failure) | Runs |
-| **GPT 5.6 Review** | Skipped | Runs |
-| **Design Review** | Skipped | Runs |
-| Tests, lint, typecheck, CodeQL, coverage, build | Run normally | Run normally |
-
-- **Opening from a fork (the default for most contributors):** the three AI
-  reviews are **skipped, not failed** — and this is identical for *everyone*,
-  regardless of permission level. A maintainer who opens a PR from their own
-  personal fork gets exactly the same skip; write access does not change it.
-  A skipped review does **not** block your PR and there is nothing for you to
-  fix: just make sure the credential-free checks (tests, lint, typecheck,
-  CodeQL, coverage, build) are green. A maintainer runs the AI review on their
-  side (or re-pushes your branch to the upstream repo) and reviews manually.
-- **Getting the AI reviews to run** depends only on *where the branch lives*,
-  never on who you are: the branch has to be on `kirodotdev/KiroCrew` itself,
-  not on a fork. Pushing a branch directly to the upstream repo requires write
-  access — so if you have it, push there and open the PR from that branch to
-  get the full suite. Without write access, the fork path above is the correct
-  and only route, by design.
-
-If your only red checks are the AI reviews on a fork PR, there is nothing for
-you to fix — flag it to a maintainer.
+Fork pull requests run the credential-free tests, lint, typecheck, CodeQL,
+coverage, and build checks. Amazon Bedrock review jobs and Amazon release jobs
+are outside this community fork's CI contract. Never add repository secrets to
+make an inherited upstream-only workflow run.
 
 ## Commit Messages
 
@@ -465,7 +377,7 @@ Rules: imperative mood, lowercase summary, no trailing period, wrap body at 72 c
 
 ## Questions?
 
-Open a [GitHub issue](https://github.com/kirodotdev/KiroCrew/issues) or start a
+Open a [GitHub issue](https://github.com/serejaris/KiroCrew-Codex/issues) or start a
 discussion in the repository.
 
 ## Security Issues

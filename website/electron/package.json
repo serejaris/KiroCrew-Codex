@@ -1,7 +1,7 @@
 {
   "name": "kirocrew-electron-mac",
-  "version": "0.1.3",
-  "description": "Kiro Crew \u2014 AI agent desktop app",
+  "version": "0.2.0",
+  "description": "KiroCrew Codex Edition \u2014 community AI agent desktop app",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -22,11 +22,11 @@
   },
   "overrides": {
     "fast-uri": "3.1.5",
-    "js-yaml": "4.3.0"
+    "js-yaml": "4.3.1"
   },
   "build": {
-    "appId": "com.amazon.kiro.crew",
-    "productName": "KiroCrew",
+    "appId": "dev.serejaris.kirocrew.codex",
+    "productName": "KiroCrewCodex",
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "icon.png",
@@ -41,7 +41,7 @@
       "notarize": false,
       "x64ArchFiles": "{**/backend-dist/**,**/backend-dist/**/.*/**}",
       "extendInfo": {
-        "CFBundleDisplayName": "Kiro Crew",
+        "CFBundleDisplayName": "KiroCrew Codex",
         "NSMicrophoneUsageDescription": "Kiro Crew uses the microphone for voice input and dictation in chat. Audio is captured only while you hold or toggle the mic button."
       }
     },
@@ -117,12 +117,6 @@
         ]
       }
     ],
-    "publish": [
-      {
-        "provider": "generic",
-        "url": "https://updates.crew.kiro.dev/feed/stable/"
-      }
-    ],
     "win": {
       "icon": "icon.png",
       "target": [
@@ -133,9 +127,9 @@
       }
     },
     "squirrelWindows": {
-      "name": "KiroCrew",
-      "iconUrl": "https://raw.githubusercontent.com/kirodotdev/KiroCrew/main/website/electron/icon.ico"
+      "name": "KiroCrewCodex",
+      "iconUrl": "https://raw.githubusercontent.com/serejaris/KiroCrew-Codex/codex-main/website/electron/icon.ico"
     }
   },
-  "author": "Kiro Crew"
+  "author": "Sereja Ris"
 }

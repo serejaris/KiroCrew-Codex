@@ -112,12 +112,10 @@ test("locality is checked only after family — same-family still short-circuits
 });
 
 test("FAMILY_META separates display names from quit-by-name targets", () => {
-  // Both installs deliberately share one bundle identifier, so the app NAME
-  // is the only valid AppleScript targeting handle.
-  assert.equal(FAMILY_META.prod.appName, "KiroCrew");
-  assert.equal(FAMILY_META.nightly.appName, "KiroCrew Nightly");
-  assert.equal(FAMILY_META.prod.displayName, "Kiro Crew");
-  assert.equal(FAMILY_META.nightly.displayName, "Kiro Crew Nightly");
+  assert.equal(FAMILY_META.prod.appName, "KiroCrewCodex");
+  assert.equal(FAMILY_META.nightly.appName, "KiroCrewCodex Nightly");
+  assert.equal(FAMILY_META.prod.displayName, "KiroCrew Codex");
+  assert.equal(FAMILY_META.nightly.displayName, "KiroCrew Codex Nightly");
 });
 
 test("identity probe targets /api/health, never the /api/status liveness URL", () => {

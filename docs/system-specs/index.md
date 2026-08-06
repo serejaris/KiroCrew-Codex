@@ -22,9 +22,9 @@ Load relevant module specs before making changes to that component. Read common 
 | [mcp-apps](modules/mcp-apps.md) | SEP-1865 interactive MCP App rendering via gatewayd: marker grammar, spool schema v1 (enforced), `app-call` frame + `/api/mcp-apps/call` authorization ladder, sandboxed-iframe CSP model, single-consume slot-bound renders, 24h TTL sweep |
 | [memory-skills-hooks](modules/memory-skills-hooks.md) | Memory files, skill loading, message/tool hooks |
 | [messaging](modules/messaging.md) | Channel-neutral messaging transport: MessagingTransport/TurnDriver approval ladder/Renderer + ChannelLink session-key namespacing (gated via messaging.use_transport) |
-| [metrics](modules/metrics.md) | OpenTelemetry-based metrics facade: namespace/attribute guardrails, redaction/privacy contract, local-first JSONL sink, default-OFF consent model (+ `KIROCREW_TELEMETRY` env opt-in), bounded local retention (age + total-size caps), opt-in OTLP egress (off by default), privacy-safe gateway boot-to-ready + bounded-cardinality per-route latency metrics |
+| [metrics](modules/metrics.md) | Inherited OpenTelemetry metrics facade; the Codex Edition distribution gate keeps local recording and OTLP egress hard-disabled, including legacy config and environment opt-ins |
 | [persistent-agent-channels](modules/persistent-agent-channels.md) | Multi-agent collaboration channels |
-| [providers](modules/providers.md) | LLM provider abstraction (KiroACP / kiro-cli — the sole provider) |
+| [providers](modules/providers.md) | LLM provider abstraction for Codex App Server and the optional Kiro ACP backend |
 | [security](modules/security.md) | Defense-in-depth: sandbox, XPIA hardening, auth, denied commands |
 | [sel](modules/sel.md) | Security Event Log — immutable audit trail for tool invocations |
 | [session](modules/session.md) | Thread-keyed ACP session pool with idle expiry |

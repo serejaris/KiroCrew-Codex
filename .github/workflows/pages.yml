@@ -5,7 +5,7 @@ name: Deploy Site (GitHub Pages)
 # or dashboard (website/) changes — and those workflows never run for site-only PRs.
 on:
   push:
-    branches: [main]
+    branches: [codex-main]
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'

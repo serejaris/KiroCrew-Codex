@@ -1204,7 +1204,7 @@ def _agent_values() -> set[str]:
 
 
 _EDITABLE_CONFIG: dict[str, dict] = {
-    "agent.provider": {"type": "enum", "values": ["acp"]},
+    "agent.provider": {"type": "enum", "values": ["acp", "codex"]},
     # Default model for new sessions. Membership can NOT be validated against a
     # fixed list: the real vocabulary is whatever the live kiro-cli advertises
     # (/api/models spawns it to find out), and it spans both canonical registry
@@ -1409,6 +1409,12 @@ async def api_kirocrew_config_patch(request: web.Request) -> web.Response:
     # that does nothing: `should_send` already blocks the egress, so without this
     # the config file and the UI would both claim "on" while nothing is ever sent.
     if path_key == "telemetry.beacon_enabled" and value is True:
+        if not beacon.OUTBOUND_TELEMETRY_ENABLED:
+            return _deny(
+                "telemetry is hard-disabled in KiroCrew Codex Edition",
+                f"{path_key}={value}",
+                403,
+            )
         # to_thread: resolving the ceiling reads the trust-root policy file and
         # the active profile from disk, which must not block the event loop.
         pinned = await asyncio.to_thread(_beacon_governance_pinned_off)
@@ -1456,11 +1462,10 @@ async def api_kirocrew_config_patch(request: web.Request) -> web.Response:
     # If provider changed, reload the factory so new sessions use the new provider
     if path_key == "agent.provider":
         state: DashboardState = request.app["state"]
-        # Refresh agent artifacts so the target provider is immediately usable.
-        # For claude_code this (re)writes ~/.claude/agents/kirocrew.mcp.json —
-        # the MCP registry the claude-agent-acp backend reads at session/new —
-        # picking up any servers installed while on kiro. Best-effort: a failure
-        # here must not block the provider switch (gateway boot also rebuilds).
+        # Refresh managed agent artifacts before rebuilding the provider factory.
+        # Codex translates the resulting MCP definitions into thread config;
+        # ACP reads them directly at session creation. Best-effort: gateway boot
+        # also rebuilds these artifacts.
         try:
             from kiro_crew.agent import rebuild_agent_config  # noqa: F811  circular import
 

@@ -475,8 +475,8 @@ name:
 - The dashboard model PATCH writes the sidecar, never the spec; agent DELETE
   prunes the sidecar entry.
 
-Note: KiroCrew is KiroACP (kiro-cli) only — the deleted `claude_code` provider
-was the sole reader of spec `cc_model`, so `cc_model` is now dead config. The
+KiroCrew supports KiroACP and Codex App Server. The deleted `claude_code`
+provider was the sole reader of spec `cc_model`, so `cc_model` is dead config. The
 lite/heartbeat installers still write it to the sidecar (harmless bookkeeping)
 purely to keep the kiro spec schema-clean; nothing in the fork resolves it.
 
@@ -492,7 +492,7 @@ class AgentConfig:
     approval_mode: str = "auto"    # "auto" or "interactive"
     streaming: bool = True
     model: str = "auto"            # resolved from agent config
-    provider: str = "acp"          # fixed to "acp" (kiro-cli) — the only provider
+    provider: str = "acp"          # "acp" (kiro-cli) or "codex" (Codex App Server)
     sandbox: str = "off"           # default "off" (defer to kiro-cli's internal agent sandbox); "auto" (namespace on Linux, seatbelt on macOS), "strict", or "off"
     sandbox_allow_no_isolation: bool = False  # SEC-009: acknowledge running un-isolated when no sandbox backend exists; false = loud SECURITY warning, true = info-level
     enforce_denied_commands: str = "all"  # "all" or "kirocrew"

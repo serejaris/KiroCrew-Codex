@@ -68,6 +68,7 @@ def _isolated_home(tmp_path, monkeypatch):
     monkeypatch.setattr(beacon, "is_ci", lambda: False)
     monkeypatch.delenv(beacon.DISABLE_ENV, raising=False)
     monkeypatch.delenv(beacon.DIST_ENV, raising=False)
+    monkeypatch.setattr(beacon, "OUTBOUND_TELEMETRY_ENABLED", True)
     # Present the unstamped shape by default. A developer who has run a
     # packaging script has a real (gitignored) _build_info.py in the checkout,
     # which would otherwise outrank DIST_ENV and fail the env-var tests.
@@ -970,32 +971,24 @@ class TestSnapshotAndPortabilityRegistration:
 
 
 class TestConfigDefaults:
-    def test_beacon_on_by_default_with_https_endpoint(self):
+    def test_beacon_off_by_default_without_endpoint(self):
         from kiro_crew.config.loader import TelemetryConfig
 
         cfg = TelemetryConfig()
-        assert cfg.beacon_enabled is True
-        assert cfg.beacon_endpoint.startswith("https://")
+        assert cfg.beacon_enabled is False
+        assert cfg.beacon_endpoint == ""
 
-    def test_a_default_install_actually_sends(self, _isolated_home):
-        """DEFAULT-ON, end to end — the whole suppression chain, not just the flag.
-
-        The stored flag being True is necessary but not sufficient: this change
-        added a governance suppression ABOVE the flag in ``should_send``, so a
-        wrong ``capability_default`` (or a probe that failed closed) would silence
-        every install in the field while ``beacon_enabled`` still read True. That
-        failure is invisible in a flag assertion and would look like a collapse in
-        Daily Active Instances, so assert the actual verdict.
-
-        The fixture already neutralizes the CI and data-home suppressions (both
-        fire in the test environment for reasons unrelated to defaults).
-        """
+    def test_community_edition_hard_disables_outbound_telemetry(
+        self, _isolated_home, monkeypatch
+    ):
         from kiro_crew.config.loader import TelemetryConfig
 
         cfg = TelemetryConfig()
-        ok, reason = beacon.should_send(enabled=cfg.beacon_enabled)
-        assert ok is True, f"a default install must send, got: {reason}"
-        assert reason == "ready"
+        monkeypatch.setattr(beacon, "OUTBOUND_TELEMETRY_ENABLED", False)
+        ok, reason = beacon.should_send(enabled=True)
+        assert cfg.beacon_enabled is False
+        assert ok is False
+        assert reason == "disabled in KiroCrew Codex Edition"
 
     def test_ungoverned_default_is_not_pinned_off(self, _isolated_home):
         """``capabilities.telemetry`` has capability_default=True.

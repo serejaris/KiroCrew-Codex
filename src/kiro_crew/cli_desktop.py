@@ -33,12 +33,8 @@ ARTIFACT_NAME = "desktop-metrics.json"
 
 # Electron productName values, which determine app.getPath("logs"). Kept in sync
 # with website/electron/package.json (the release default) and
-# packaging/build-desktop.sh, which overrides it with
-# `-c.productName=KiroCrew Nightly` for nightly stamps. Nightly is not a cosmetic
-# variant: it installs as a separate app with its own log directory, and its users
-# are the ones most likely to be profiling, so omitting it made the command report
-# "not found" against an app that was recording correctly.
-PRODUCT_NAMES = ("KiroCrew", "KiroCrew Nightly")
+# packaging/build-desktop.sh, which overrides it for nightly stamps.
+PRODUCT_NAMES = ("KiroCrewCodex", "KiroCrewCodex Nightly")
 
 SUPPORTED_VERSION = 1
 

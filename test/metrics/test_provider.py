@@ -1,7 +1,17 @@
 """Tests for kiro_crew.metrics.provider — consent gate + recorder singleton."""
 
+import pytest
+
 from kiro_crew.config.loader import KiroCrewConfig, TelemetryConfig
 from kiro_crew.metrics.provider import get_recorder, reset_for_testing
+
+
+@pytest.fixture(autouse=True)
+def _exercise_inherited_provider(monkeypatch):
+    """Keep inherited provider mechanics covered behind the edition gate."""
+    import kiro_crew.metrics.provider as provider_mod
+
+    monkeypatch.setattr(provider_mod, "PRODUCT_TELEMETRY_ENABLED", True)
 
 
 def _patch_config(monkeypatch, **tel_kwargs):
@@ -17,6 +27,29 @@ def test_disabled_by_default(monkeypatch):
     _patch_config(monkeypatch, enabled=False)
     try:
         assert get_recorder().enabled is False
+    finally:
+        reset_for_testing()
+
+
+def test_codex_edition_hard_disables_all_collection(tmp_path, monkeypatch):
+    import kiro_crew.metrics.provider as provider_mod
+
+    reset_for_testing()
+    _patch_config(
+        monkeypatch,
+        enabled=True,
+        local_dir=str(tmp_path),
+        otlp_endpoint="https://collector.example.test/v1/metrics",
+    )
+    monkeypatch.setenv("KIROCREW_TELEMETRY", "1")
+    monkeypatch.setattr(provider_mod, "PRODUCT_TELEMETRY_ENABLED", False)
+    try:
+        assert provider_mod._consent_enabled(TelemetryConfig(enabled=True)) is False
+        assert provider_mod._build_otlp_reader(
+            TelemetryConfig(enabled=True, otlp_endpoint="https://collector.example.test")
+        ) is None
+        assert get_recorder().enabled is False
+        assert not tmp_path.exists() or not any(tmp_path.iterdir())
     finally:
         reset_for_testing()
 

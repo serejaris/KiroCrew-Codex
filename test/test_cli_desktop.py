@@ -65,7 +65,7 @@ class TestLogDirResolution:
         monkeypatch.setattr(platform_compat, "IS_MACOS", True)
         monkeypatch.setattr(platform_compat, "IS_WINDOWS", False)
         dirs = cli_desktop.desktop_log_dirs({})
-        assert any(d.as_posix().endswith("Library/Logs/KiroCrew") for d in dirs)
+        assert any(d.as_posix().endswith("Library/Logs/KiroCrewCodex") for d in dirs)
 
     def test_windows_uses_appdata(self, monkeypatch):
         monkeypatch.setattr(platform_compat, "IS_MACOS", False)
@@ -73,13 +73,13 @@ class TestLogDirResolution:
         # Compared with as_posix so the assertion does not depend on the host
         # separator: str() of a path is backslash-separated on Windows.
         dirs = [d.as_posix() for d in cli_desktop.desktop_log_dirs({"APPDATA": "/roam"})]
-        assert "/roam/KiroCrew/logs" in dirs
+        assert "/roam/KiroCrewCodex/logs" in dirs
 
     def test_linux_honours_xdg_config_home(self, monkeypatch):
         monkeypatch.setattr(platform_compat, "IS_MACOS", False)
         monkeypatch.setattr(platform_compat, "IS_WINDOWS", False)
         dirs = [d.as_posix() for d in cli_desktop.desktop_log_dirs({"XDG_CONFIG_HOME": "/cfg"})]
-        assert "/cfg/KiroCrew/logs" in dirs
+        assert "/cfg/KiroCrewCodex/logs" in dirs
 
     def test_unresolvable_home_degrades_instead_of_raising(self, monkeypatch):
         """No HOME and no passwd entry must not raise out of a helper.
@@ -279,36 +279,35 @@ class TestNonNumericValues:
 class TestNightlyProductDirectory:
     """Nightly installs under its own productName and so its own log directory.
 
-    packaging/build-desktop.sh passes `-c.productName=KiroCrew Nightly` for nightly
-    stamps, so probing only "KiroCrew" reported "not found" against a nightly app
-    that was recording correctly -- and nightly users are the likeliest profilers.
+    packaging/build-desktop.sh passes `-c.productName=KiroCrewCodex Nightly` for
+    nightly stamps, so both edition identities must remain discoverable.
     """
 
     def test_both_product_directories_are_probed_on_macos(self, monkeypatch):
         monkeypatch.setattr(platform_compat, "IS_MACOS", True)
         monkeypatch.setattr(platform_compat, "IS_WINDOWS", False)
         dirs = [d.as_posix() for d in cli_desktop.desktop_log_dirs({})]
-        assert any(d.endswith("Library/Logs/KiroCrew") for d in dirs)
-        assert any(d.endswith("Library/Logs/KiroCrew Nightly") for d in dirs)
+        assert any(d.endswith("Library/Logs/KiroCrewCodex") for d in dirs)
+        assert any(d.endswith("Library/Logs/KiroCrewCodex Nightly") for d in dirs)
 
     def test_both_product_directories_are_probed_on_linux(self, monkeypatch):
         monkeypatch.setattr(platform_compat, "IS_MACOS", False)
         monkeypatch.setattr(platform_compat, "IS_WINDOWS", False)
         dirs = [d.as_posix() for d in cli_desktop.desktop_log_dirs({"XDG_CONFIG_HOME": "/cfg"})]
-        assert "/cfg/KiroCrew/logs" in dirs
-        assert "/cfg/KiroCrew Nightly/logs" in dirs
+        assert "/cfg/KiroCrewCodex/logs" in dirs
+        assert "/cfg/KiroCrewCodex Nightly/logs" in dirs
 
     def test_both_product_directories_are_probed_on_windows(self, monkeypatch):
         monkeypatch.setattr(platform_compat, "IS_MACOS", False)
         monkeypatch.setattr(platform_compat, "IS_WINDOWS", True)
         dirs = [d.as_posix() for d in cli_desktop.desktop_log_dirs({"APPDATA": "/roam"})]
-        assert "/roam/KiroCrew/logs" in dirs
-        assert "/roam/KiroCrew Nightly/logs" in dirs
+        assert "/roam/KiroCrewCodex/logs" in dirs
+        assert "/roam/KiroCrewCodex Nightly/logs" in dirs
 
     def test_the_newest_artifact_wins_when_both_exist(self, monkeypatch, tmp_path):
         """With both installed, the run just reproduced is the one written last."""
-        release = tmp_path / "KiroCrew"
-        nightly = tmp_path / "KiroCrew Nightly"
+        release = tmp_path / "KiroCrewCodex"
+        nightly = tmp_path / "KiroCrewCodex Nightly"
         release.mkdir()
         nightly.mkdir()
         old = release / cli_desktop.ARTIFACT_NAME
@@ -331,7 +330,7 @@ class TestNightlyProductDirectory:
         monkeypatch.setattr(platform_compat, "IS_WINDOWS", False)
         assert cli_desktop.desktop_cmd(_args(tmp_path / "absent.json")) == 3
         err = capsys.readouterr().err
-        assert "KiroCrew Nightly" in err, "the nightly path must be discoverable from the error"
+        assert "KiroCrewCodex Nightly" in err, "the nightly path must be discoverable from the error"
 
     def test_product_names_stay_in_sync_with_the_packaging_script(self):
         """A rename in build-desktop.sh silently breaks discovery for that build."""

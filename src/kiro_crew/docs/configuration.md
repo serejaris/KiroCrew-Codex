@@ -93,7 +93,7 @@ Set via `kirocrew config set sandbox.mode auto`.
 
 | Key | Description | Default |
 |-----|-------------|---------|
-| `agent.provider` | LLM provider backend: `"acp"` (KiroACP / kiro-cli) | `"acp"` |
+| `agent.provider` | LLM provider backend: `"codex"` (OpenAI Codex App Server) or `"acp"` (KiroACP / kiro-cli) | `"acp"` |
 | `agent.default_agent` | Default agent name | `"kirocrew"` |
 | `agent.approval_mode` | `"auto"` or `"interactive"` | `"interactive"` |
 | `agent.model` | Default LLM model for new sessions. `"auto"` defers to the agent config, then to Kiro's own default. Editable from Settings → Chat → Model; a per-session model picker overrides it for that session only | `"auto"` |

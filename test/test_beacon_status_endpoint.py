@@ -10,6 +10,7 @@ claims "off" while it still sends — is a false promise, so both are reported.
 
 from __future__ import annotations
 
+import json
 from unittest.mock import patch
 
 import pytest
@@ -38,6 +39,18 @@ def _neutral_env(tmp_path, monkeypatch):
     monkeypatch.setattr(beacon, "is_default_home", lambda: True)
     monkeypatch.setattr(beacon, "is_ci", lambda: False)
     monkeypatch.delenv(beacon.DISABLE_ENV, raising=False)
+    monkeypatch.setattr(beacon, "OUTBOUND_TELEMETRY_ENABLED", True)
+    (tmp_path / "config.json").write_text(
+        json.dumps(
+            {
+                "telemetry": {
+                    "beacon_enabled": True,
+                    "beacon_endpoint": "https://beacon.example.test",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
     return tmp_path
 
 
@@ -48,6 +61,19 @@ async def _get(client: TestClient) -> dict:
 
 
 class TestBeaconStatusEndpoint:
+    @pytest.mark.asyncio
+    async def test_codex_edition_reports_hard_disabled(
+        self, _neutral_env, monkeypatch
+    ) -> None:
+        monkeypatch.setattr(beacon, "OUTBOUND_TELEMETRY_ENABLED", False)
+        async with TestClient(TestServer(_make_app())) as c:
+            body = await _get(c)
+        assert body["enabled"] is False
+        assert body["would_send"] is False
+        assert body["endpoint_configured"] is False
+        assert body["governance_override"] is True
+        assert "Codex Edition" in body["reason"]
+
     @pytest.mark.asyncio
     async def test_reports_enabled_and_would_send(self, _neutral_env) -> None:
         async with TestClient(TestServer(_make_app())) as c:

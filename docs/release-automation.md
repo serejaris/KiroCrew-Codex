@@ -1,5 +1,10 @@
 # KiroCrew Release Automation
 
+> **Upstream reference only.** The community Codex fork does not run these
+> Amazon signing/CDN workflows. It publishes source-only GitHub prereleases as
+> documented in [CONTRIBUTING.md](../CONTRIBUTING.md#releasing-new-versions),
+> and its desktop auto-updater is disabled.
+
 Operational reference for the three-channel release pipeline:
 nightly → insider → stable.
 

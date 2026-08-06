@@ -156,7 +156,10 @@ class SessionMap:
             raise
 
     def get(self, key: str) -> str | None:
-        """Return kiro-cli session ID if mapping exists and .json file is present.
+        """Return a resumable provider session ID when its mapping is valid.
+
+        Kiro ACP mappings require the native transcript files. Codex and the
+        dormant Claude backend own persistence in their provider runtimes.
 
         Handles the dashboard history key round-trip: the original session key
         ``dashboard:chat-1-xxx`` becomes ``dashboard_chat-1-xxx`` on disk (via
@@ -183,7 +186,7 @@ class SessionMap:
         if not entry:
             return None
         sid = entry["sid"]
-        if entry.get("provider") == "claude_code":
+        if entry.get("provider") in {"claude_code", "codex"}:
             return sid
         sessions_dir = _kiro_sessions_dir()
         if sid and (sessions_dir / f"{sid}.json").exists():
@@ -259,12 +262,12 @@ class SessionMap:
         self._remove_entry(canonical_key(key))
 
     def prune(self) -> int:
-        """Remove entries whose session files no longer exist."""
+        """Remove stale Kiro mappings whose native session files are gone."""
         sessions_dir = _kiro_sessions_dir()
         stale = [
             k
             for k, entry in self._data.items()
-            if entry.get("provider") != "claude_code"
+            if entry.get("provider") not in {"claude_code", "codex"}
             and (
                 (entry.get("sid") and not (sessions_dir / f"{entry['sid']}.json").exists())
                 or (

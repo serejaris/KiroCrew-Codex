@@ -21,14 +21,18 @@ latched value can be arbitrarily stale. That splits the callers in two:
 
 from __future__ import annotations
 
+import time
+
 from aiohttp import web
 
 from kiro_crew.kiro_prerequisite import KiroPrerequisiteService
+from kiro_crew.providers.codex import CodexReadiness, probe_codex_readiness
 
 _KIRO_NOT_READY_RESPONSE = {
     "error": "Kiro CLI setup or sign-in is required before starting a session.",
     "code": "kiro_prerequisite_required",
 }
+_CODEX_READINESS_CACHE_KEY = "codex_readiness_cache"
 
 # How stale a probe may be and still authorize a destructive or spawning call.
 # Small enough that an external logout cannot linger behind this gate, large
@@ -65,6 +69,26 @@ async def kiro_verified_ready(service: object) -> bool:
     if not isinstance(service, KiroPrerequisiteService):
         return False
     return await service.verified_ready(max_age_secs=_VERIFY_MAX_AGE_SECS)
+
+
+async def codex_readiness(
+    request: web.Request, *, max_age_secs: float | None = None
+) -> CodexReadiness:
+    """Return a cached Codex install/login probe, refreshing when requested."""
+
+    cached = request.app.get(_CODEX_READINESS_CACHE_KEY)
+    now = time.monotonic()
+    if isinstance(cached, tuple) and len(cached) == 2:
+        checked_at, readiness = cached
+        if (
+            isinstance(checked_at, (int, float))
+            and isinstance(readiness, CodexReadiness)
+            and (max_age_secs is None or now - checked_at <= max_age_secs)
+        ):
+            return readiness
+    readiness = await probe_codex_readiness()
+    request.app[_CODEX_READINESS_CACHE_KEY] = (now, readiness)
+    return readiness
 
 
 def _service(request: web.Request) -> object:
@@ -104,6 +128,20 @@ async def reject_if_kiro_unverified(request: web.Request) -> web.Response | None
     browser-opening spawn), and only these paths pay for the re-probe.
     """
 
+    state = request.app.get("state")
+    sessions = getattr(state, "sessions", None)
+    configured_provider = getattr(sessions, "configured_provider", "acp")
+    if isinstance(configured_provider, str) and configured_provider == "codex":
+        readiness = await codex_readiness(request, max_age_secs=_VERIFY_MAX_AGE_SECS)
+        if readiness.ready:
+            return None
+        return web.json_response(
+            {
+                "error": "Codex CLI setup or ChatGPT sign-in is required before starting a session.",
+                "code": "codex_prerequisite_required",
+            },
+            status=503,
+        )
     if await kiro_verified_ready(_service(request)):
         return None
     return web.json_response(_KIRO_NOT_READY_RESPONSE, status=503)

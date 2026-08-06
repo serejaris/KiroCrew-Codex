@@ -3785,6 +3785,7 @@ class TestKiroPrerequisiteHandlers:
         app_claim: str,
         user: str = "test-user",
         owner_id: str = "test-user",
+        provider: str = "acp",
     ) -> web.Application:
         @web.middleware
         async def identity(
@@ -3796,7 +3797,10 @@ class TestKiroPrerequisiteHandlers:
             return await handler(request)
 
         app = web.Application(middlewares=[identity])
-        app["state"] = SimpleNamespace(owner_id=owner_id)
+        app["state"] = SimpleNamespace(
+            owner_id=owner_id,
+            sessions=SimpleNamespace(configured_provider=provider),
+        )
         app["kiro_prerequisite_service"] = service
         app.router.add_get("/api/kiro-prerequisite", api_kiro_prerequisite_status)
         app.router.add_post(
@@ -3812,6 +3816,41 @@ class TestKiroPrerequisiteHandlers:
             api_kiro_prerequisite_repair_specs,
         )
         return app
+
+    @pytest.mark.asyncio
+    async def test_codex_status_reflects_binary_and_login_probe(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from kiro_crew.providers.codex import CodexReadiness
+
+        service = KiroPrerequisiteService(
+            platform_name="linux",
+            environ={"HOME": str(tmp_path), "PATH": ""},
+            home=tmp_path,
+            audit_writer=_no_audit,
+            assume_ready=True,
+        )
+
+        async def signed_out(*_args: Any, **_kwargs: Any) -> CodexReadiness:
+            return CodexReadiness(True, False, "Not logged in")
+
+        monkeypatch.setattr(
+            "kiro_crew.dashboard.handlers.kiro_prerequisite.codex_readiness",
+            signed_out,
+        )
+        async with TestClient(
+            TestServer(self._app(service, app_claim="", provider="codex"))
+        ) as client:
+            resp = await client.get("/api/kiro-prerequisite")
+            payload = await resp.json()
+
+        assert resp.status == 200
+        assert payload["installed"] is True
+        assert payload["authenticated"] is False
+        assert payload["ready"] is False
+        assert payload["setup_allowed"] is False
 
     @pytest.mark.asyncio
     async def test_dashboard_user_can_read_and_start_setup(

@@ -3,10 +3,10 @@
 Config location: ~/.kiro/crew/config.json (overridden by KIROCREW_HOME)
 Credentials:    ~/.kiro/crew/.env (overridden by KIROCREW_HOME)
 
-KiroCrew is KiroACP-only: the sole provider is the ACP adapter driving the
-kiro-cli backend. This module handles session timeouts, hook rules, and the
-dashboard URL via the config file. (The dashboard *port* is set with the
-``KIROCREW_PORT`` env var, not a config key.)
+KiroCrew supports the original Kiro ACP backend and the official OpenAI Codex
+App Server. This module handles provider selection, session timeouts, hook
+rules, and the dashboard URL via the config file. (The dashboard *port* is set
+with the ``KIROCREW_PORT`` env var, not a config key.)
 """
 
 from __future__ import annotations
@@ -665,7 +665,7 @@ _BOT_NAME_RE = _re.compile(r"[^a-zA-Z0-9 _\-.]")
 # Default endpoint for the anonymous usage beacon (see kiro_crew/beacon.py).
 # Lives here with the other config defaults so beacon.py adds no import edge
 # into the config package. Setting the field to "" disables the beacon outright.
-_DEFAULT_BEACON_ENDPOINT = "https://d175o3ylxqum0e.cloudfront.net"
+_DEFAULT_BEACON_ENDPOINT = ""
 
 
 def _sanitize_bot_name(raw: str) -> str:
@@ -742,7 +742,11 @@ class AgentConfig:
     )
     provider: str = field(
         default="acp",
-        metadata=_meta("Provider", "LLM provider backend (KiroACP / kiro-cli).", enum=["acp"]),
+        metadata=_meta(
+            "Provider",
+            "LLM provider backend: Kiro ACP or OpenAI Codex App Server.",
+            enum=["acp", "codex"],
+        ),
     )
     default_agent: str = field(
         default="",
@@ -2203,22 +2207,18 @@ class SkillsConfig:
 
 @dataclass
 class TelemetryConfig:
-    """Metrics telemetry settings (Wave 0 trunk).
+    """Inherited telemetry settings retained for config compatibility.
 
-    Default OFF: when disabled, metric call sites are cheap no-ops and nothing is
-    written or exported (byte-identical to no telemetry), mirroring the
-    ``mcp_gateway.enabled`` / ``skills.lazy_load`` opt-in convention. When
-    enabled, a local-first JSONL sink under ``~/.kiro/crew/metrics`` is activated;
-    remote / OTLP egress is a separate opt-in requiring ``kirocrew[otlp]``.
+    KiroCrew Codex Edition ignores these values. Metric call sites stay no-op,
+    no local shards are written, and no network exporter is constructed.
     """
 
     enabled: bool = field(
         default=False,
         metadata=_meta(
             "Enabled",
-            "Main switch for KiroCrew metrics telemetry. Off by default: metric "
-            "call sites are no-ops and nothing is written. When on, a local-first "
-            "JSONL sink under ~/.kiro/crew/metrics is enabled (no network egress).",
+            "Retained for upstream configuration compatibility. All telemetry "
+            "collection is hard-disabled in KiroCrew Codex Edition.",
         ),
     )
     local_dir: str = field(
@@ -2258,47 +2258,27 @@ class TelemetryConfig:
         default="",
         metadata=_meta(
             "OTLP Endpoint",
-            "Opt-in OpenTelemetry OTLP/HTTP metrics endpoint (e.g. "
-            "http://localhost:4318/v1/metrics). EMPTY = no network egress "
-            "(default). When set, aggregated metrics are ALSO pushed to this "
-            "collector in addition to the local JSONL sink; requires the "
-            "kirocrew[otlp] package extra to be installed "
-            "(rec #1: OTLP opt-in only, no egress by default).",
+            "Retained for upstream configuration compatibility and ignored. "
+            "KiroCrew Codex Edition never constructs an OTLP exporter.",
             sensitive=True,
         ),
     )
     beacon_enabled: bool = field(
-        default=True,
+        default=False,
         metadata=_meta(
             "Anonymous Usage Beacon",
-            "Anonymous daily heartbeat so maintainers can see how many "
-            "copies are actively running, which versions are in use, and "
-            "which distribution channels they came from. Sends "
-            "EXACTLY five fields, at most once per day: a random installation "
-            "id, app release (major.minor.patch only — build stamps are "
-            "stripped), Python minor version, distribution channel, and a "
-            "first-run bit. NEVER sends prompts, "
-            "model output, file contents, paths, repo names, credentials, "
-            "hostname, username, IP address, operating system, CPU "
-            "architecture, release channel, or governance posture. "
-            "Automatically suppressed in CI "
-            "and for a non-default KIROCREW_HOME. Opt out with "
-            "KIROCREW_TELEMETRY_DISABLED=1 or by turning this off; an "
-            "enterprise policy can also pin it off via the "
-            "capabilities.telemetry governance scope, which this switch cannot "
-            "override. Independent "
-            "of the 'enabled' switch above, which is local-only metrics "
-            "collection and still never egresses.",
+            "Retained for upstream configuration compatibility. Outbound "
+            "product telemetry is hard-disabled in KiroCrew Codex Edition, "
+            "so this value cannot enable a network heartbeat.",
         ),
     )
     beacon_endpoint: str = field(
         default=_DEFAULT_BEACON_ENDPOINT,
         metadata=_meta(
             "Beacon Endpoint",
-            "HTTPS base URL that receives the anonymous heartbeat. EMPTY = no "
-            "beacon is ever sent, regardless of the toggle above. Must be "
-            "https:// (a plaintext heartbeat would reveal which hosts run this "
-            "software to any on-path observer); a non-https value is cleared.",
+            "Retained for upstream configuration compatibility and empty by "
+            "default. KiroCrew Codex Edition ignores it because outbound "
+            "product telemetry is hard-disabled.",
         ),
     )
 
@@ -3859,7 +3839,8 @@ class KiroCrewConfig:
         default_factory=TelemetryConfig,
         metadata=_meta(
             "Telemetry",
-            "Metrics telemetry (local-first JSONL sink). Off by default.",
+            "Inherited telemetry settings. Collection and export are "
+            "hard-disabled in KiroCrew Codex Edition.",
         ),
     )
     stt: SttConfig = field(
@@ -3982,7 +3963,7 @@ class KiroCrewConfig:
         metadata=_meta("Default Memory Store", "Fallback memory store name."),
     )
     auto_update: bool = field(
-        default=True,
+        default=False,
         metadata=_meta("Auto Update", "Enable automatic update checks."),
     )
     timezone: str = field(
@@ -4431,7 +4412,7 @@ class KiroCrewConfig:
                 retention_days=_safe_int(telemetry_data.get("retention_days", 0), 0),
                 max_total_mb=_safe_int(telemetry_data.get("max_total_mb", 0), 0),
                 otlp_endpoint=str(telemetry_data.get("otlp_endpoint", "")),
-                beacon_enabled=bool(telemetry_data.get("beacon_enabled", True)),
+                beacon_enabled=bool(telemetry_data.get("beacon_enabled", False)),
                 beacon_endpoint=str(
                     telemetry_data.get("beacon_endpoint", _DEFAULT_BEACON_ENDPOINT)
                 ),
@@ -4765,7 +4746,7 @@ class KiroCrewConfig:
                 # draw on the operator's screen", never the reverse.
                 cursor_motion=_safe_bool(computer_use_data.get("cursor_motion", False), False),
             ),
-            auto_update=data.get("auto_update", True),
+            auto_update=data.get("auto_update", False),
             timezone=data.get("timezone", ""),
             snapshot_dir=data.get("snapshot_dir", ""),
             registries=[
@@ -5127,10 +5108,99 @@ class KiroCrewConfig:
     def create_provider_factory(self) -> Callable:
         """Return a factory that creates LLMProvider instances from config.
 
-        KiroCrew is KiroACP-only: the sole provider is the ACP adapter driving
-        the kiro-cli backend. The factory accepts an optional ``session_key`` to
-        create a per-session subdirectory under ``workspace_root()``.
+        The factory accepts an optional ``session_key`` to create a per-session
+        subdirectory under ``workspace_root()``.
         """
+        if self.agent.provider == "codex":
+            from kiro_crew.providers.codex import CodexAppServerProvider
+
+            configured_model = normalize_agent_model(self.agent.model)
+            default_effort = self.agent.reasoning_effort
+            try:
+                developer_instructions = (config_package_dir() / "prompt.md").read_text(
+                    encoding="utf-8"
+                )
+            except OSError:
+                developer_instructions = ""
+
+            # Reuse KiroCrew's managed MCP server definitions when setup has
+            # already written them. Codex receives them as per-thread config;
+            # no Kiro account or kiro-cli process is involved.
+            codex_config: dict[str, object] = {}
+            try:
+                agent_path = kiro_agents_dir() / "kirocrew.json"
+                agent_data = json.loads(agent_path.read_text(encoding="utf-8"))
+                managed = agent_data.get("mcpServers", {})
+                if isinstance(managed, dict):
+                    mcp_servers: dict[str, dict[str, object]] = {}
+                    for name, raw in managed.items():
+                        if not isinstance(name, str) or not isinstance(raw, dict):
+                            continue
+                        command = raw.get("command")
+                        url = raw.get("url")
+                        if not (
+                            isinstance(command, str) and command or isinstance(url, str) and url
+                        ):
+                            continue
+                        spec: dict[str, object] = {}
+                        if isinstance(command, str) and command:
+                            spec["command"] = command
+                            if isinstance(raw.get("args"), list):
+                                spec["args"] = raw["args"]
+                            if isinstance(raw.get("env"), dict):
+                                spec["env"] = raw["env"]
+                        if isinstance(url, str) and url:
+                            spec["url"] = url
+                            if isinstance(raw.get("headers"), dict):
+                                spec["http_headers"] = raw["headers"]
+                        if isinstance(raw.get("disabled"), bool):
+                            spec["enabled"] = not raw["disabled"]
+                        if isinstance(raw.get("disabledTools"), list):
+                            spec["disabled_tools"] = raw["disabledTools"]
+                        auto_approve = raw.get("autoApprove")
+                        if isinstance(auto_approve, list):
+                            tools = {
+                                tool: {"approval_mode": "approve"}
+                                for tool in auto_approve
+                                if isinstance(tool, str) and tool
+                            }
+                            if tools:
+                                spec["tools"] = tools
+                        mcp_servers[name] = spec
+                    if mcp_servers:
+                        codex_config["mcp_servers"] = mcp_servers
+            except (OSError, ValueError, TypeError):
+                logger.debug("Codex provider: managed MCP config unavailable", exc_info=True)
+
+            def _codex(
+                session_key: str | None = None,
+                agent: str | None = None,
+                channel_id: str | None = None,
+                model_override: str | None = None,
+                cwd: str | None = None,
+                extra_env: dict[str, str] | None = None,
+                reasoning_effort_override: str | None = None,
+                **_kwargs: object,
+            ) -> CodexAppServerProvider:
+                wdir = Path(cwd) if cwd else _session_work_dir(session_key)
+                selected_model = normalize_agent_model(model_override) or configured_model
+                return CodexAppServerProvider(
+                    work_dir=wdir,
+                    model=selected_model,
+                    agent=agent,
+                    session_key=session_key,
+                    channel_id=channel_id,
+                    extra_env=extra_env,
+                    reasoning_effort=reasoning_effort_override or default_effort,
+                    approval_mode=self.agent.approval_mode,
+                    dangerously_skip_permissions=self.agent.dangerously_skip_permissions,
+                    sandbox_mode=self.agent.sandbox,
+                    developer_instructions=developer_instructions,
+                    app_server_config=codex_config,
+                )
+
+            return _codex
+
         from kiro_crew.providers.acp import (
             AcpProvider,  # circular: acp -> client -> session -> config.loader
         )

@@ -1653,6 +1653,13 @@ def _telemetry(args: argparse.Namespace) -> None:
         sys.exit(1)
 
     want = action == "enable"
+    if want and not beacon.OUTBOUND_TELEMETRY_ENABLED:
+        print(
+            "❌ Telemetry is hard-disabled in KiroCrew Codex Edition.",
+            file=sys.stderr,
+        )
+        print("   No configuration change was written.", file=sys.stderr)
+        sys.exit(1)
     # Refuse a re-enable an enterprise ceiling has pinned off, mirroring the
     # dashboard PATCH route's 403. Without this the CLI would write
     # beacon_enabled: true and print "ENABLED" on a host where should_send()

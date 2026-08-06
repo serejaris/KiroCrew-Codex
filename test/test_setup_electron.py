@@ -102,7 +102,7 @@ class TestSetupElectronBuild:
         monkeypatch.setattr("kiro_crew.cli_setup.subprocess.run", lambda *a, **kw: mock_ok)
         _setup_electron()
         out = capsys.readouterr().out
-        assert "KiroCrew.app not found" in out
+        assert "KiroCrewCodex.app not found" in out
 
     def test_successful_install(self, tmp_path, capsys, monkeypatch):
         monkeypatch.setattr("kiro_crew.cli_setup.Path.home", lambda: tmp_path)
@@ -110,7 +110,7 @@ class TestSetupElectronBuild:
         monkeypatch.setattr("kiro_crew.cli_setup.platform.machine", lambda: "arm64")
         monkeypatch.setattr("kiro_crew.cli_setup.shutil.which", lambda _: "/usr/local/bin/node")
         electron_dir = self._electron_dir(tmp_path, monkeypatch)
-        app_dir = electron_dir / "dist" / "mac-arm64" / "KiroCrew.app" / "Contents"
+        app_dir = electron_dir / "dist" / "mac-arm64" / "KiroCrewCodex.app" / "Contents"
         app_dir.mkdir(parents=True)
         (app_dir / "Info.plist").write_text("<plist></plist>")
 
@@ -119,7 +119,9 @@ class TestSetupElectronBuild:
         _setup_electron()
         out = capsys.readouterr().out
         assert "installed to ~/Applications" in out
-        assert (tmp_path / "Applications" / "KiroCrew.app" / "Contents" / "Info.plist").exists()
+        assert (
+            tmp_path / "Applications" / "KiroCrewCodex.app" / "Contents" / "Info.plist"
+        ).exists()
 
     def test_replaces_existing_app(self, tmp_path, capsys, monkeypatch):
         monkeypatch.setattr("kiro_crew.cli_setup.Path.home", lambda: tmp_path)
@@ -127,18 +129,20 @@ class TestSetupElectronBuild:
         monkeypatch.setattr("kiro_crew.cli_setup.platform.machine", lambda: "arm64")
         monkeypatch.setattr("kiro_crew.cli_setup.shutil.which", lambda _: "/usr/local/bin/node")
         electron_dir = self._electron_dir(tmp_path, monkeypatch)
-        app_dir = electron_dir / "dist" / "mac-arm64" / "KiroCrew.app" / "Contents"
+        app_dir = electron_dir / "dist" / "mac-arm64" / "KiroCrewCodex.app" / "Contents"
         app_dir.mkdir(parents=True)
         (app_dir / "Info.plist").write_text("<new>")
 
-        old_app = tmp_path / "Applications" / "KiroCrew.app" / "Contents"
+        old_app = tmp_path / "Applications" / "KiroCrewCodex.app" / "Contents"
         old_app.mkdir(parents=True)
         (old_app / "Info.plist").write_text("<old>")
 
         mock_ok = MagicMock(returncode=0, stdout="", stderr="")
         monkeypatch.setattr("kiro_crew.cli_setup.subprocess.run", lambda *a, **kw: mock_ok)
         _setup_electron()
-        installed = tmp_path / "Applications" / "KiroCrew.app" / "Contents" / "Info.plist"
+        installed = (
+            tmp_path / "Applications" / "KiroCrewCodex.app" / "Contents" / "Info.plist"
+        )
         assert installed.read_text(encoding="utf-8") == "<new>"
 
     def test_x86_arch_fallback(self, tmp_path, capsys, monkeypatch):
@@ -147,7 +151,7 @@ class TestSetupElectronBuild:
         monkeypatch.setattr("kiro_crew.cli_setup.platform.machine", lambda: "x86_64")
         monkeypatch.setattr("kiro_crew.cli_setup.shutil.which", lambda _: "/usr/local/bin/node")
         electron_dir = self._electron_dir(tmp_path, monkeypatch)
-        app_dir = electron_dir / "dist" / "mac" / "KiroCrew.app" / "Contents"
+        app_dir = electron_dir / "dist" / "mac" / "KiroCrewCodex.app" / "Contents"
         app_dir.mkdir(parents=True)
         (app_dir / "Info.plist").write_text("<x86>")
 

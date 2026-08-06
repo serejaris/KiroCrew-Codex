@@ -82,6 +82,17 @@ def _config_cmd(args: argparse.Namespace) -> None:
                 print("       kirocrew config set --file <path.json>", file=sys.stderr)
                 sys.exit(1)
             parsed = _parse_value(value)
+            telemetry_enable_requested = (
+                (key in {"telemetry.beacon_enabled", "telemetry.enabled"} and parsed is True)
+                or (key == "telemetry.otlp_endpoint" and bool(str(parsed).strip()))
+            )
+            if telemetry_enable_requested and not beacon.OUTBOUND_TELEMETRY_ENABLED:
+                print(
+                    "❌ Telemetry is hard-disabled in KiroCrew Codex Edition.",
+                    file=sys.stderr,
+                )
+                print("   No configuration change was written.", file=sys.stderr)
+                sys.exit(1)
             # Fourth write path to telemetry.beacon_enabled, after the dashboard
             # PATCH and `telemetry enable`. Gated here too, and BEFORE the
             # local/base split so it covers both: `--local` writes the overlay,

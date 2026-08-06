@@ -25,6 +25,7 @@ concurrency:
 jobs:
   version:
     name: Compute Nightly Version
+    if: github.repository == 'kirodotdev/KiroCrew'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:

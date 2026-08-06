@@ -231,23 +231,23 @@ def _setup_electron() -> None:
         return
 
     arch = "mac-arm64" if platform.machine() == "arm64" else "mac"
-    app_src = electron_dir / "dist" / arch / "KiroCrew.app"
+    app_src = electron_dir / "dist" / arch / "KiroCrewCodex.app"
     if not app_src.is_dir():
         for candidate in ("mac-arm64", "mac", "mac-x64"):
-            app_src = electron_dir / "dist" / candidate / "KiroCrew.app"
+            app_src = electron_dir / "dist" / candidate / "KiroCrewCodex.app"
             if app_src.is_dir():
                 break
     if not app_src.is_dir():
-        print("  ❌ Build succeeded but KiroCrew.app not found in dist/")
+        print("  ❌ Build succeeded but KiroCrewCodex.app not found in dist/")
         return
 
-    app_dest = Path.home() / "Applications" / "KiroCrew.app"
+    app_dest = Path.home() / "Applications" / "KiroCrewCodex.app"
     app_dest.parent.mkdir(parents=True, exist_ok=True)
     if app_dest.is_dir():
         shutil.rmtree(app_dest)
     shutil.copytree(str(app_src), str(app_dest))
-    print("  ✅ KiroCrew.app installed to ~/Applications")
-    print("     Launch via Spotlight (⌘+Space → KiroCrew) or Finder → ~/Applications")
+    print("  ✅ KiroCrewCodex.app installed to ~/Applications")
+    print("     Launch via Spotlight (⌘+Space → KiroCrew Codex) or Finder → ~/Applications")
 
 
 def _setup(agent_only: bool = False, electron_only: bool = False, clean: bool = False) -> None:

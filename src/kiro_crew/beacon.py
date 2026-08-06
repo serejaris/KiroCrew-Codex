@@ -107,6 +107,13 @@ from kiro_crew.platform.governance_profiles import (
 
 logger = logging.getLogger(__name__)
 
+# The community Codex edition ships without outbound product telemetry. Keep
+# the legacy implementation for upstream compatibility and auditability, while
+# making the production permission chokepoint fail closed before it touches the
+# filesystem or network. Tests may monkeypatch this constant to exercise the
+# inherited implementation in isolation.
+OUTBOUND_TELEMETRY_ENABLED = False
+
 # The default endpoint lives in ``config/loader.py`` next to the other config
 # defaults (and so this module adds no import edge into the config package).
 # Every function here takes the endpoint as a parameter; an empty endpoint
@@ -619,6 +626,8 @@ def telemetry_permitted(*, enabled: bool, audit_tool: str = "") -> tuple[bool, s
     signal, so a shared day stamp would silently drop the second app a user
     installs on any given day.
     """
+    if not OUTBOUND_TELEMETRY_ENABLED:
+        return False, "disabled in KiroCrew Codex Edition"
     if _env_truthy(DISABLE_ENV):
         return False, f"opted out via {DISABLE_ENV}"
     if is_governance_pinned_off(audit_tool=audit_tool):
@@ -737,6 +746,16 @@ def status(endpoint: str, *, enabled: bool, app_version: str) -> dict[str, objec
     Auditing here would write a governance SEL row per inspection; the enforcement
     call in ``send`` is the one that carries the audit.
     """
+    if not OUTBOUND_TELEMETRY_ENABLED:
+        return {
+            "beacon_enabled": False,
+            "endpoint_configured": False,
+            "install_id": "(disabled)",
+            "would_send": False,
+            "reason": "disabled in KiroCrew Codex Edition",
+            "governance_pinned_off": True,
+            "payload_preview": {},
+        }
     try:
         ok, reason = should_send(enabled=enabled, audit=False)
     except (OSError, RuntimeError) as exc:
@@ -776,6 +795,11 @@ def status(endpoint: str, *, enabled: bool, app_version: str) -> dict[str, objec
 
 def format_status(info: dict[str, object]) -> str:
     """Render :func:`status` as human-readable CLI output."""
+    if info.get("reason") == "disabled in KiroCrew Codex Edition":
+        return (
+            "Telemetry is hard-disabled in KiroCrew Codex Edition.\n"
+            "No heartbeat, install receipt, local metrics, or OTLP export is produced."
+        )
     enabled = "yes" if info["beacon_enabled"] else "no"
     endpoint = "configured" if info["endpoint_configured"] else "not set"
     verdict = "will send" if info["would_send"] else "will NOT send"

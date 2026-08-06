@@ -1,6 +1,6 @@
 """LLMProvider ABC and provider-agnostic event types.
 
-All LLM backends (ACP, Bedrock) implement LLMProvider.  Consumers
+All LLM backends (ACP, Codex App Server) implement LLMProvider. Consumers
 (handler, gateway, CLI) depend only on this interface, never on a
 concrete provider.
 """
@@ -34,6 +34,16 @@ CancelOutcome = Literal["acked", "timeout", "no_turn", "error"]
 
 class LLMProvider(ABC):
     """Abstract LLM backend."""
+
+    @property
+    def provider_id(self) -> str:
+        """Stable provider label used for persistence and provider switching."""
+        return "unknown"
+
+    @property
+    def resumed(self) -> bool:
+        """Whether ``start`` restored a provider-native session/thread."""
+        return False
 
     @abstractmethod
     async def start(self) -> None:
@@ -92,6 +102,12 @@ class LLMProvider(ABC):
         Each provider overrides to return its own session_id.
         """
         return ""
+
+    def set_resume_session_id(self, session_id: str) -> None:
+        """Select a provider-native session/thread to resume on ``start``.
+
+        Providers without native resume support keep the default no-op.
+        """
 
     async def cleanup_session(self, session_id: str) -> None:
         """Delete on-disk session files for the given session ID.

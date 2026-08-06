@@ -214,7 +214,7 @@ def _send_configured(app_slug: str, *, official: bool, kind: str) -> None:
 
 def dispatch(app_slug: str, *, official: bool, kind: str) -> None:
     """Start a detached daemon sender without delaying the completed install."""
-    if not official:
+    if not official or not beacon.OUTBOUND_TELEMETRY_ENABLED:
         return
     with contextlib.suppress(Exception):
         threading.Thread(
