@@ -12,6 +12,7 @@ import SkillBrowserModal from '../../components/SkillBrowserModal'
 import DiffBlock from '../../components/DiffBlock'
 import { useProvider } from '../../providers'
 import type { Skill } from '../../types'
+import SkillContextBudget from './SkillContextBudget'
 
 import { fmtBytes, fmtCompact } from '../../i18n/format'
 import { i18nT } from '../../i18n/t'
@@ -45,6 +46,7 @@ function sourceLabel(source: Skill['source']): string | null {
 export default function SkillsTab() {
   const provider = useProvider()
   const queryClient = useQueryClient()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [creating, setCreating] = useState(false)
   const [formData, setFormData] = useState<SkillFormData>(EMPTY_FORM)
   const [skillFilter, setSkillFilter] = useState('')
@@ -52,6 +54,18 @@ export default function SkillsTab() {
   const [detailEditing, setDetailEditing] = useState(false)
   // Multi-provider skill browser drawer (Add Skill button).
   const [skillBrowserOpen, setSkillBrowserOpen] = useState(false)
+
+  // Deep-linkable view param: ?view=budget swaps to the control plane.
+  const viewBudget = searchParams.get('view') === 'budget'
+  const showBudget = () => setSearchParams(prev => { const next = new URLSearchParams(prev); next.set('view', 'budget'); return next }, { replace: true })
+  const hideBudget = () => setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete('view'); return next }, { replace: true })
+
+  // Light prefetch of budget total for the doorway display.
+  const { data: budgetData } = useQuery({
+    queryKey: ['skills-budget'],
+    queryFn: () => api.skillsBudget(),
+    staleTime: 60_000,
+  })
 
   const { data: skills = [], isLoading, isFetching, refetch } = useQuery<Skill[]>({
     queryKey: ['skills'],
@@ -192,6 +206,9 @@ export default function SkillsTab() {
     </Card>
   </>)
 
+  // Control plane: full-page budget view, deep-linkable via ?view=budget.
+  if (viewBudget) return <SkillContextBudget onBack={hideBudget} />
+
   return (<>
     <PendingSkillsPanel />
     {/* Create Skill Modal */}
@@ -202,7 +219,7 @@ export default function SkillsTab() {
       <SkillForm data={formData} onChange={setFormData} />
     </Modal>
 
-    <h4 className="text-sm font-semibold text-text-strong mt-4 mb-2 flex items-center gap-2">{i18nT('pages.overview.skillsTab.skills_count', { count: skills.length })} <InfoTip text={i18nT('pages.overview.skillsTab.skills_tip')} /> <span className="ml-auto flex items-center gap-2"><Btn onClick={() => setSkillBrowserOpen(true)}><Download size={14} /> {i18nT('pages.overview.skillsTab.add_skill')}</Btn><Btn primary onClick={() => { setFormData(EMPTY_FORM); setCreating(true) }}>{i18nT('pages.overview.skillsTab.create_new_skill')}</Btn></span></h4>
+    <h4 className="text-sm font-semibold text-text-strong mt-4 mb-2 flex items-center gap-2">{i18nT('pages.overview.skillsTab.skills_count', { count: skills.length })} <InfoTip text={i18nT('pages.overview.skillsTab.skills_tip')} /> <span className="ml-auto flex items-center gap-2"><Btn onClick={showBudget} className="text-accent border-accent/30 bg-accent/5 hover:bg-accent/10">{i18nT('pages.overview.skillsTab.budget_doorway', { total: budgetData ? fmtCompact(budgetData.total_chars) : '…' })}</Btn><Btn onClick={() => setSkillBrowserOpen(true)}><Download size={14} /> {i18nT('pages.overview.skillsTab.add_skill')}</Btn><Btn primary onClick={() => { setFormData(EMPTY_FORM); setCreating(true) }}>{i18nT('pages.overview.skillsTab.create_new_skill')}</Btn></span></h4>
     <Card>
       <div className="flex items-center gap-2 mb-3">
         <div className="relative max-w-[480px] flex-1">

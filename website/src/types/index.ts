@@ -107,6 +107,26 @@ export interface Skill {
   loaded_by_agents?: string[]
 }
 
+/** Response shape for GET /api/skills/budget — the control-plane cost data. */
+export interface SkillBudgetRow {
+  key: string
+  name: string
+  size_bytes: number
+  deliveries: number | null
+  chars: number
+  inject_on_trigger: boolean
+  always: boolean
+  owned: boolean
+  source: string
+  folded_from?: string[]
+  idle_days: number | null
+}
+export interface SkillBudgetResponse {
+  window_days: number
+  total_chars: number
+  rows: SkillBudgetRow[]
+}
+
 /** A single entry in a skill folder's tree listing. */
 export interface SkillTreeEntry {
   path: string  // relative to the skill root, posix-style (e.g. "references/doc.md")
