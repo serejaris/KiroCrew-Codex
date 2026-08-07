@@ -116,7 +116,7 @@ Discord.
 | **Defense in depth** | Combine tool approvals, OS sandboxing, sensitive-path checks, credential redaction, deny rules, audit events, and governance profiles. |
 
 You can also paste a screenshot and ask what is causing an error. Kiro Crew sends
-the image to the active Kiro model and keeps the diagnosis in the conversation
+the image to the active provider model and keeps the diagnosis in the conversation
 history.
 
 The complete inventory is in [Features](docs/features.md) and
@@ -128,7 +128,7 @@ The complete inventory is in [Features](docs/features.md) and
 flowchart TD
     S["Desktop app · Web dashboard · Slack · Telegram · WeCom · CLI"]
     G["Gateway<br/>access · sessions · memory · schedules · approvals · apps"]
-    A["Agent sessions<br/>ACP runtime · kiro-cli · MCP tools · models"]
+    A["Agent sessions<br/>Codex App Server · optional ACP/kiro-cli · MCP tools · models"]
     S --> G --> A
 ```
 
@@ -140,13 +140,14 @@ memory, tool, approval, and policy services. Apps extend the dashboard and
 Gateway APIs with focused workflows.
 
 Each active conversation or background task uses an agent session. Its session
-provider drives `kiro-cli` over ACP, streams model and tool events, and preserves
-conversation state. Depending on the workload, a session is backed by its own
-ACP process or by a session handle on a shared multiplexed ACP runtime. The
-Gateway manages these sessions along with scheduling, approvals, memory,
-security policy, messaging connections, and the dashboard.
+provider drives Codex App Server or the optional `kiro-cli` ACP runtime, streams
+model and tool events, and preserves conversation state. Depending on the provider
+and workload, a session is backed by its own process or by a session handle on a
+shared multiplexed runtime. The Gateway manages these sessions along with
+scheduling, approvals, memory, security policy, messaging connections, and the
+dashboard.
 
-The current runtime places the Gateway, agent sessions, ACP processes, and state
+The current runtime places the Gateway, agent sessions, provider processes, and state
 on the same host. Run Kiro Crew on your Mac, inside a container on your machine,
 or on a remote Linux host you control. Conversation history, memory, and
 knowledge indexes remain on that host. Model requests are handled by the active
@@ -221,9 +222,11 @@ the runtime boundary instead of relying only on prompt instructions.
 - **Interactive approvals.** Review tool requests in the dashboard, Slack, or
   Telegram. Session-scoped trust can reduce repeated prompts without changing
   the underlying deny and sensitive-path controls.
-- **OS sandbox.** On Linux and macOS, `kiro-cli` can run inside namespace or
-  Seatbelt isolation. Standard, strict, and off modes make the tradeoff
-  explicit. Windows does not currently provide this OS-level layer.
+- **OS sandbox.** Codex sessions use the native Codex workspace sandbox. On Linux
+  and macOS, the optional `kiro-cli` provider can also run inside namespace or
+  Seatbelt isolation. Standard, strict, and off modes make the tradeoff explicit
+  for that ACP runtime. Windows does not currently provide the additional
+  KiroCrew namespace/Seatbelt layer.
 - **Sensitive data guards.** Kiro Crew blocks direct access to protected paths,
   strips sensitive environment variables, and redacts credential patterns from
   output before it reaches a chat surface.
