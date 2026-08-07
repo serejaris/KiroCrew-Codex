@@ -62,12 +62,10 @@ async def test_keepalive_calls_touch_activity_on_provider():
 
 def test_wait_tool_posts_keepalive_periodically():
     """wait() should POST /api/session-keepalive at least once while sleeping."""
-    import time as _time
-
     from kiro_crew.mcp_core import _call_tool
 
-    with patch("kiro_crew.mcp_core._post") as mock_post, patch.object(
-        _time, "sleep", return_value=None
+    with patch("kiro_crew.mcp_core._post") as mock_post, patch(
+        "kiro_crew.mcp_core._wait_sleep", return_value=None
     ):
         mock_post.return_value = {}
 
@@ -82,7 +80,9 @@ def test_wait_tool_posts_keepalive_periodically():
         def _fake_monotonic() -> float:
             return next(times, _final[0])
 
-        with patch.object(_time, "monotonic", side_effect=_fake_monotonic):
+        with patch(
+            "kiro_crew.mcp_core._wait_monotonic", side_effect=_fake_monotonic
+        ):
             _call_tool("wait", {"seconds": 60, "reason": "test"})
 
         paths = [c.args[0] for c in mock_post.call_args_list]

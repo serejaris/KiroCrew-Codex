@@ -132,6 +132,13 @@ from kiro_crew.validation import (
     validate_tool_args,
 )
 
+# Keep the blocking wait tool's clock patchable without replacing the process-wide
+# ``time`` module.  Pytest-xdist workers may have background asyncio/tasks alive;
+# a global monkeypatch can change their scheduling while this synchronous test
+# advances its fake clock.
+_wait_monotonic = time.monotonic
+_wait_sleep = time.sleep
+
 
 def _resolve_api_base() -> str:
     """Resolve the gateway API base URL from ``dashboard.url`` config."""
@@ -4231,12 +4238,12 @@ def _call_tool_inner(name: str, args: dict[str, Any]) -> str:
         reason = str(args.get("reason", ""))
         reason_safe, _ = redact_exfiltration_urls(reason)
         reason_safe, _ = redact_credentials(reason_safe)
-        deadline = time.monotonic() + seconds
+        deadline = _wait_monotonic() + seconds
         # Ping session-keepalive every 60s so the gateway's is_responsive()
         # doesn't flag this session as stale and SIGTERM the ACP subprocess.
-        _next_ping = time.monotonic()
+        _next_ping = _wait_monotonic()
         while True:
-            now = time.monotonic()
+            now = _wait_monotonic()
             remaining = deadline - now
             if remaining <= 0:
                 break
@@ -4249,7 +4256,7 @@ def _call_tool_inner(name: str, args: dict[str, Any]) -> str:
                 except Exception:
                     pass  # keepalive is best-effort
                 _next_ping = now + 60.0
-            time.sleep(min(5, remaining))
+            _wait_sleep(min(5, remaining))
         sel().log_tool_invocation(
             session_key=_resolve_session_key(),
             source="mcp",
