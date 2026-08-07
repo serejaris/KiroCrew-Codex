@@ -434,7 +434,7 @@ def _doctor(platform_boot_error: "Exception | None" = None) -> None:
     setup is its job — and reports the failure here instead of aborting.
     """
 
-    print("Kiro Crew Doctor 👻\n")
+    print("VibecodersCrew Doctor\n")
     issues: list[str] = []
     cfg = KiroCrewConfig.load()
 
