@@ -2976,7 +2976,7 @@ class TestToolElapsedTimer:
         # Track timer start to simulate elapsed time
         timer_start = [None]  # Use list to allow mutation in closure
 
-        original_monotonic = handler.time.monotonic
+        original_monotonic = handler._tool_monotonic
 
         def fake_monotonic():
             now = original_monotonic()
@@ -2992,16 +2992,16 @@ class TestToolElapsedTimer:
             # When timer starts, record the current time
             timer_start[0] = original_monotonic()
             # Actually set _tool_start_time in handler
-            handler.time.monotonic = lambda: timer_start[0]  # Time when started
+            handler._tool_monotonic = lambda: timer_start[0]  # Time when started
             original_start_timer()
             # Then switch to returning elapsed time
-            handler.time.monotonic = lambda: timer_start[0] + 5.5
+            handler._tool_monotonic = lambda: timer_start[0] + 5.5
 
         # This approach is too complex. Let's just verify the code path exists
         # by checking that elapsed time IS passed to append_task when conditions are met.
         # The actual unit test of elapsed formatting would be better as a direct unit test.
 
-        monkeypatch.setattr(handler.time, "monotonic", fake_monotonic)
+        monkeypatch.setattr(handler, "_tool_monotonic", fake_monotonic)
         provider = FakeProvider(
             [
                 LLMEvent(kind="tool_call", title="Read File", tool_kind="read"),
@@ -3027,8 +3027,8 @@ class TestToolElapsedTimer:
         slack._stream_enabled = True
 
         # All monotonic calls return the same time (0 elapsed)
-        base_time = handler.time.monotonic()
-        monkeypatch.setattr(handler.time, "monotonic", lambda: base_time)
+        base_time = handler._tool_monotonic()
+        monkeypatch.setattr(handler, "_tool_monotonic", lambda: base_time)
 
         provider = FakeProvider(
             [
@@ -3076,20 +3076,15 @@ class TestToolElapsedTimer:
         slack = MockSlackClient()
         slack._stream_enabled = True
 
-        # We need to track when _tool_start_time gets set
-        # The simplest way: wrap the original and track based on call count
-        # From debug: ~20 calls happen. The timer start is around call 7-8
-        # and elapsed calc around call 18. We need start to be early, elapsed late.
         calls = [0]
-        base = handler.time.monotonic()
+        base = handler._tool_monotonic()
 
         def fake_monotonic():
             calls[0] += 1
-            # Calls 1-10 return base (timer sets _tool_start_time here)
-            # Calls 11+ return base + 75.5 (elapsed calculation)
-            return base if calls[0] <= 10 else base + 75.5
+            # First call starts the tool timer; the next call finalizes it.
+            return base if calls[0] == 1 else base + 75.5
 
-        monkeypatch.setattr(handler.time, "monotonic", fake_monotonic)
+        monkeypatch.setattr(handler, "_tool_monotonic", fake_monotonic)
         provider = FakeProvider(
             [
                 LLMEvent(kind="tool_call", title="Read File", tool_kind="read"),
@@ -3131,7 +3126,7 @@ class TestToolElapsedTimer:
         monkeypatch.setattr(asyncio, "sleep", fake_sleep)
 
         call_count = [0]
-        base = handler.time.monotonic()
+        base = handler._tool_monotonic()
 
         def fake_monotonic():
             call_count[0] += 1
@@ -3140,7 +3135,7 @@ class TestToolElapsedTimer:
                 return base
             return base + 45
 
-        monkeypatch.setattr(handler.time, "monotonic", fake_monotonic)
+        monkeypatch.setattr(handler, "_tool_monotonic", fake_monotonic)
         provider = FakeProvider(
             [
                 LLMEvent(kind="tool_call", title="Read File", tool_kind="read"),
@@ -3163,15 +3158,14 @@ class TestToolElapsedTimer:
         slack._stream_enabled = True
 
         calls = [0]
-        base = handler.time.monotonic()
+        base = handler._tool_monotonic()
 
         def fake_monotonic():
             calls[0] += 1
-            # Early calls (tool 1 timer start) return base; later calls
-            # (transition completion elapsed calc) return base + 42s.
-            return base if calls[0] <= 10 else base + 42.0
+            # First call starts tool 1; later calls transition/finalize tools.
+            return base if calls[0] == 1 else base + 42.0
 
-        monkeypatch.setattr(handler.time, "monotonic", fake_monotonic)
+        monkeypatch.setattr(handler, "_tool_monotonic", fake_monotonic)
         provider = FakeProvider(
             [
                 LLMEvent(kind="tool_call", title="Read File", tool_kind="read"),

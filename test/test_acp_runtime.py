@@ -2986,8 +2986,10 @@ class TestAcpRuntimePidTracking:
         # the runtime namespace — patch WHERE USED, not the source module.
         monkeypatch.setattr(rt_mod, "_untrack_pid", lambda p: calls["pid"].append(p))
         monkeypatch.setattr(rt_mod, "_untrack_session_pid", lambda p: calls["session"].append(p))
-        # os.killpg / getpgid on the fake PID would raise — the kill() body
-        # already guards those with OSError/ProcessLookupError, so let them fire.
+        # Never target the synthetic PID on the host: a Windows runner can have
+        # a real process numbered 4242. This test owns the untracking branch.
+        monkeypatch.setattr(rt_mod.platform_compat, "kill_process_tree", lambda *_: None)
+        monkeypatch.setattr(rt_mod.platform_compat, "pid_exists", lambda _pid: False)
 
         await rt.kill()
 

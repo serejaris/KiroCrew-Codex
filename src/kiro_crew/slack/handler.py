@@ -121,6 +121,10 @@ from kiro_crew.voice_reply import voice_reply as _voice_reply_fn
 
 logger = logging.getLogger(__name__)
 
+# Patch this clock in timer tests instead of replacing time.monotonic on the
+# process-wide stdlib module, which also perturbs asyncio and unrelated code.
+_tool_monotonic = time.monotonic
+
 # Mapping of bang commands to their /kirocrew slash equivalents.
 _BANG_TO_SLASH: dict[str, str] = {
     "!yolo": "/kirocrew yolo",
@@ -2882,7 +2886,7 @@ async def handle_message(
         while True:
             await asyncio.sleep(30)
             if _active_task_id and _tool_start_time and use_slack_stream:
-                elapsed = time.monotonic() - _tool_start_time
+                elapsed = _tool_monotonic() - _tool_start_time
                 mins, secs = divmod(int(elapsed), 60)
                 time_str = f"{mins}m {secs}s" if mins else f"{secs}s"
                 # Elapsed goes in the TITLE (Slack replaces title on same
@@ -2898,7 +2902,7 @@ async def handle_message(
         """Start the 30s elapsed-time updater for the current tool."""
         nonlocal _tool_timer_task, _tool_start_time
         _cancel_tool_timer()
-        _tool_start_time = time.monotonic()
+        _tool_start_time = _tool_monotonic()
         _tool_timer_task = asyncio.ensure_future(_tool_elapsed_updater())
 
     def _cancel_tool_timer() -> None:
@@ -2912,7 +2916,7 @@ async def handle_message(
         """Return formatted elapsed time for the current tool, or empty string."""
         if not _tool_start_time:
             return ""
-        elapsed = time.monotonic() - _tool_start_time
+        elapsed = _tool_monotonic() - _tool_start_time
         if elapsed < 1:
             return ""
         mins, secs = divmod(elapsed, 60)
