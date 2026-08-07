@@ -47,6 +47,9 @@
   <a href="#docs-and-contributing">Docs</a>
 </p>
 
+
+> **No GitHub Actions on this fork.** Upstream CI/Build/signing/publish workflows are removed. Build and test locally; see `.github/README.md`.
+
 ## Quick start
 
 This fork is distributed as source. It does not use the upstream KiroCrew

@@ -10,7 +10,7 @@ All notable changes to VibecodersCrew are documented in this file.
 - Repository target: `serejaris/vibecoderscrew`. CLI entry points: `vibecoderscrew` (primary) and `kirocrew` (technical compatibility alias). Desktop appId: `tech.serejaris.vibecoderscrew`.
 - Product telemetry remains hard-disabled (beacon, install receipts, local JSONL metrics, OTLP export, Electron profiling). Environment variables cannot re-enable outbound product telemetry.
 - Default embedding-model CDN download removed. Set `KIROCREW_EMBED_MODEL_URL` or `memory.embed_model_url` (https) or a local `memory.embed_model_path` to enable embeddings; otherwise memory stays on keyword/FTS search.
-- Public CI no longer uploads unsigned wheel/desktop artifacts (source-only distribution policy).
+- GitHub Actions CI/Build/signing/publish workflows removed from the public fork (local verification only).
 - Apache-2.0 §4(b) modification notices added on modified source files; see NOTICE.
 - Removed tracked `temp-screenshots/` from the public tree.
 
