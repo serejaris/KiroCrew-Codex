@@ -276,8 +276,10 @@ describe('ArtifactDetailPage', () => {
       .mockResolvedValue({ slug: 'cr-queue', versions: [1, 2] })
     renderRoute()
     await waitFor(() => expect(screen.getByText('CR Queue')).toBeInTheDocument())
-    // Widget kind keeps iframe-based rendering.
-    expect(document.querySelector('iframe')).not.toBeNull()
+    // Widget kind keeps iframe-based rendering. The blob URL used by the
+    // sandboxed frame is created in an effect, so wait for that second render
+    // instead of racing it on slower CI runners.
+    await waitFor(() => expect(document.querySelector('iframe')).not.toBeNull())
   })
 
   // ── inline edit + revert ───────────────────────────
