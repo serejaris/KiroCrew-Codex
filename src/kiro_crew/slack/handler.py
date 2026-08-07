@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Message handler — streams LLM responses to Slack with tool approval UI.
 
 Routes incoming Slack messages through hooks, cron command interception,

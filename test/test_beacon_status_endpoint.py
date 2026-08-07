@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Tests for GET /api/telemetry/beacon — the privacy panel's opt-out state.
 
 The endpoint backs the Settings → Privacy toggle. Its contract is that

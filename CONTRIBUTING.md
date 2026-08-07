@@ -1,21 +1,22 @@
-# Contributing to Kiro Crew
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
+# Contributing to Vibecoders Crew
 
-Thanks for your interest in contributing! Kiro Crew is an open-source project and
+Thanks for your interest in contributing! Vibecoders Crew is an open-source project and
 we welcome issues and pull requests.
 
-This repository is the unofficial KiroCrew Codex Edition community fork. Its
+This repository is the unofficial VibecodersCrew community fork. Its
 default branch is `codex-main`; upstream KiroCrew remains at
 [`kirodotdev/KiroCrew`](https://github.com/kirodotdev/KiroCrew). Please open
 Codex-provider and fork-release issues here.
 
 ## Reporting Bugs and Requesting Features
 
-Open a [GitHub issue](https://github.com/serejaris/KiroCrew-Codex/issues). Before you
+Open a [GitHub issue](https://github.com/serejaris/vibecoderscrew/issues). Before you
 do, search the open issues, because the fastest resolution is often a thread that
 already exists.
 
 For a bug, what actually helps is a way to reproduce it, the version you are on,
-your operating system, and anything unusual about how Kiro Crew is installed or
+your operating system, and anything unusual about how Vibecoders Crew is installed or
 where it runs. A stack trace beats a description of a stack trace. If it only
 happens on one surface, say which one, because the dashboard, the CLI, and a chat
 channel take different paths through the code.
@@ -27,9 +28,9 @@ it leaves room for an answer nobody had thought of.
 ## Finding Something to Work On
 
 Two labels mark work that is ready for someone outside the core team.
-[`good first issue`](https://github.com/serejaris/KiroCrew-Codex/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+[`good first issue`](https://github.com/serejaris/vibecoderscrew/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 is scoped small and does not assume much context.
-[`help wanted`](https://github.com/serejaris/KiroCrew-Codex/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[`help wanted`](https://github.com/serejaris/vibecoderscrew/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 is work the team wants done but is not doing right now.
 
 Before starting anything substantial, check whether someone is already on it and
@@ -51,8 +52,8 @@ tell you in a paragraph.
 
 ```bash
 # 1. Fork the repo on GitHub, then clone your fork
-git clone https://github.com/serejaris/KiroCrew-Codex.git
-cd KiroCrew-Codex
+git clone https://github.com/serejaris/vibecoderscrew.git
+cd vibecoderscrew
 
 # 2. Build the frontend and bundle it into the package
 cd website
@@ -89,7 +90,7 @@ how code gets written, tested, and reviewed here:
 - **`babysit`** — same-session monitoring loop that keeps a PR moving through
   CI and review rounds.
 
-An agent contributing to Kiro Crew loads this suite and follows the same
+An agent contributing to Vibecoders Crew loads this suite and follows the same
 worktree → build gate → prepare-pr → review loop human contributors use, so
 the PR process stays consistent regardless of who is writing the code. If you
 change the workflow, change it THERE — those files are the single source of
@@ -174,7 +175,7 @@ KIROCREW_HOME=.kirocrew-dev KIROCREW_PORT=6777 kirocrew token
 
 ## Releasing New Versions
 
-KiroCrew Codex Edition publishes source-first GitHub releases from
+VibecodersCrew publishes source-first GitHub releases from
 `codex-main`. Amazon's signing, CDN, installer, telemetry, and update lanes are
 not reused by the community fork.
 
@@ -185,7 +186,7 @@ not reused by the community fork.
 # 2. Run the complete backend, frontend, Electron, type, lint, security,
 #    packaging, and live Codex smoke gates.
 # 3. Commit with a Conventional Commit.
-git tag -a vX.Y.Z-codex.N -m "KiroCrew Codex Edition X.Y.Z preview N"
+git tag -a vX.Y.Z-codex.N -m "VibecodersCrew X.Y.Z preview N"
 git push origin codex-main
 git push origin vX.Y.Z-codex.N
 gh release create vX.Y.Z-codex.N --prerelease --generate-notes
@@ -252,7 +253,7 @@ Key entry points:
 
 Full reference: [AGENTS.md](AGENTS.md)
 
-## Extending Kiro Crew
+## Extending Vibecoders Crew
 
 - **Skills** — drop markdown files in `skills/` or `~/.kiro/crew/skills/`. See [skills/README.md](skills/README.md) for the full format reference
 - **MCP tools** — add to `mcp_core.py` or `mcp_cron.py`. Every LLM-facing command must have an MCP tool
@@ -377,7 +378,7 @@ Rules: imperative mood, lowercase summary, no trailing period, wrap body at 72 c
 
 ## Questions?
 
-Open a [GitHub issue](https://github.com/serejaris/KiroCrew-Codex/issues) or start a
+Open a [GitHub issue](https://github.com/serejaris/vibecoderscrew/issues) or start a
 discussion in the repository.
 
 ## Security Issues
@@ -392,7 +393,7 @@ means following it, and the file names where to report a concern.
 
 ## Licensing
 
-Kiro Crew is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for the
+Vibecoders Crew is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for the
 full text and [NOTICE](NOTICE) for attribution. Third-party components carry their
 own licenses, recorded in [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES).
 

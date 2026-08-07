@@ -1,3 +1,5 @@
+// Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+// See NOTICE and CHANGELOG.md for the nature of the modifications.
 const { app, BaseWindow, BrowserWindow, WebContentsView, shell, dialog, Tray, Menu, nativeImage, nativeTheme, Notification, ipcMain, webContents, session, desktopCapturer, systemPreferences, screen } = require("electron");
 const Store = require("electron-store");
 const fs = require("fs");

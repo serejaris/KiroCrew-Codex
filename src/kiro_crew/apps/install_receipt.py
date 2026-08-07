@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Anonymous receipts for successful official-catalog app installs.
 
 Receipts reuse the beacon endpoint and effective consent gate. The wire format is

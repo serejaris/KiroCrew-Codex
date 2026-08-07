@@ -1,10 +1,11 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Security Policy
 
 ## Reporting a Vulnerability
 
 If you discover a potential security issue in this community fork, please
 **do not** create a public GitHub issue. Use GitHub's private
-[Report a vulnerability](https://github.com/serejaris/KiroCrew-Codex/security/advisories/new)
+[Report a vulnerability](https://github.com/serejaris/vibecoderscrew/security/advisories/new)
 form instead.
 
 Please include:
@@ -24,5 +25,5 @@ running the most recent version.
 
 ## Scope
 
-This policy covers the Kiro Crew source code and its bundled dependencies. It does not cover
-third-party services (LLM providers, etc.) that Kiro Crew connects to.
+This policy covers the Vibecoders Crew source code and its bundled dependencies. It does not cover
+third-party services (LLM providers, etc.) that Vibecoders Crew connects to.

@@ -1,3 +1,5 @@
+// Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+// See NOTICE and CHANGELOG.md for the nature of the modifications.
 "use strict";
 // Decision table for the cross-app gateway ownership guard. The guard's
 // contract: interpose ONLY when both sides are positively identified as
@@ -112,10 +114,10 @@ test("locality is checked only after family — same-family still short-circuits
 });
 
 test("FAMILY_META separates display names from quit-by-name targets", () => {
-  assert.equal(FAMILY_META.prod.appName, "KiroCrewCodex");
-  assert.equal(FAMILY_META.nightly.appName, "KiroCrewCodex Nightly");
-  assert.equal(FAMILY_META.prod.displayName, "KiroCrew Codex");
-  assert.equal(FAMILY_META.nightly.displayName, "KiroCrew Codex Nightly");
+  assert.equal(FAMILY_META.prod.appName, "VibecodersCrew");
+  assert.equal(FAMILY_META.nightly.appName, "VibecodersCrew Nightly");
+  assert.equal(FAMILY_META.prod.displayName, "Vibecoders Crew");
+  assert.equal(FAMILY_META.nightly.displayName, "Vibecoders Crew Nightly");
 });
 
 test("identity probe targets /api/health, never the /api/status liveness URL", () => {

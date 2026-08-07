@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Tests for the anonymous usage beacon (kiro_crew.beacon).
 
 Drives real production code — no reimplementation of the payload shape or the
@@ -988,7 +990,7 @@ class TestConfigDefaults:
         ok, reason = beacon.should_send(enabled=True)
         assert cfg.beacon_enabled is False
         assert ok is False
-        assert reason == "disabled in KiroCrew Codex Edition"
+        assert reason == "disabled in VibecodersCrew"
 
     def test_ungoverned_default_is_not_pinned_off(self, _isolated_home):
         """``capabilities.telemetry`` has capability_default=True.

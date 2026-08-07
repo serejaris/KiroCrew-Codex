@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Getting Started with KiroCrew
 
 ## What Is KiroCrew?

@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # KiroCrew Release Automation
 
 > **Upstream reference only.** The community Codex fork does not run these

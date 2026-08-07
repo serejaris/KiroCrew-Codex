@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 # Build the standalone KiroCrew desktop app end-to-end.
 #
 # Pipeline (uses the python-build-standalone approach):
@@ -105,10 +107,10 @@ fi
 # they are ONE app on two update lanes (the in-app channel switcher moves
 # between them), so they keep the package.json defaults. Derivation mirrors
 # auto-update.js channelForVersion: only a "-nightly." stamp changes
-# identity; unstamped dev builds and insider/stable stamps build "KiroCrewCodex".
+# identity; unstamped dev builds and insider/stable stamps build "VibecodersCrew".
 case "$KC_VERSION" in
-  *-nightly.*) PRODUCT_NAME="KiroCrewCodex Nightly" ;;
-  *)           PRODUCT_NAME="KiroCrewCodex" ;;
+  *-nightly.*) PRODUCT_NAME="VibecodersCrew Nightly" ;;
+  *)           PRODUCT_NAME="VibecodersCrew" ;;
 esac
 
 log() { printf '\n\033[1;36m▶ %s\033[0m\n' "$*"; }
@@ -426,7 +428,7 @@ log "Packaging desktop app (electron-builder, version: $KC_VERSION)…"
   if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
 
   EB_ARGS=( "-c.extraMetadata.version=$KC_VERSION" )
-  if [ "$PRODUCT_NAME" = "KiroCrewCodex Nightly" ]; then
+  if [ "$PRODUCT_NAME" = "VibecodersCrew Nightly" ]; then
     # Same community-fork appId as production ON PURPOSE:
     # - Finder decides install-replace by FILENAME only, so the distinct
     #   productName alone gives side-by-side installs.
@@ -437,7 +439,7 @@ log "Packaging desktop app (electron-builder, version: $KC_VERSION)…"
     # Cost accepted: shared TCC/notification identity, and a kirocrew:// URL
     # scheme could not disambiguate the two apps (none is registered today).
     EB_ARGS+=(
-      "-c.productName=KiroCrewCodex Nightly"
+      "-c.productName=VibecodersCrew Nightly"
       "-c.mac.icon=icon-nightly.png"
       "-c.linux.icon=icon-nightly.png"
       "-c.win.icon=icon-nightly.png"
@@ -446,7 +448,7 @@ log "Packaging desktop app (electron-builder, version: $KC_VERSION)…"
       # paths from that internal name, so changing it while productName stays
       # space-free makes the packaged app abort with "Unable to find helper
       # app". Nightly re-overrides the static display name to keep its suffix.
-      "-c.mac.extendInfo.CFBundleDisplayName=KiroCrew Codex Nightly"
+      "-c.mac.extendInfo.CFBundleDisplayName=Vibecoders Crew Nightly"
       # Squirrel.Windows keys the INSTALL identity off squirrelWindows.name
       # (install dir %LocalAppData%\<name>, shortcuts, and the RELEASES/
       # .nupkg feed identity). On mac, a distinct productName alone gives
@@ -455,8 +457,8 @@ log "Packaging desktop app (electron-builder, version: $KC_VERSION)…"
       # install replaces a stable install in place. This identity persists
       # on user machines at first install: changing it later orphans
       # installed updaters, so it is pinned from the first shipped build.
-      "-c.squirrelWindows.name=KiroCrewCodexNightly"
-      "-c.squirrelWindows.iconUrl=https://raw.githubusercontent.com/serejaris/KiroCrew-Codex/codex-main/website/electron/icon-nightly.ico"
+      "-c.squirrelWindows.name=VibecodersCrewNightly"
+      "-c.squirrelWindows.iconUrl=https://raw.githubusercontent.com/serejaris/vibecoderscrew/codex-main/website/electron/icon-nightly.ico"
     )
   fi
   if [ "$OS" = "darwin" ]; then

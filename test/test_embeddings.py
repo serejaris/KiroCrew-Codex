@@ -495,7 +495,20 @@ def _fake_urlopen_factory(
 
 
 class TestModelDownloadManager:
-    """ensure_model download cycle — HTTP fully faked, no network."""
+    """Download-path tests need an explicit model URL.
+
+    Production defaults to no CDN fetch; these tests still exercise the
+    downloader with a fake https URL.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _enable_test_model_url(self, monkeypatch):
+        monkeypatch.setattr(
+            embeddings_mod,
+            "_DEFAULT_MODEL_URL",
+            "https://example.test/models/qwen3-embedding-0.6b.gguf",
+        )
+
 
     @pytest.fixture(autouse=True)
     def _download_env(self, monkeypatch):
@@ -739,6 +752,14 @@ class TestMakeSyncEmbedFn:
 
 
 class TestStartBackgroundModelDownload:
+    @pytest.fixture(autouse=True)
+    def _enable_test_model_url(self, monkeypatch):
+        monkeypatch.setattr(
+            embeddings_mod,
+            "_DEFAULT_MODEL_URL",
+            "https://example.test/models/qwen3-embedding-0.6b.gguf",
+        )
+
     @pytest.mark.asyncio
     async def test_returns_none_when_model_present(self, tmp_path: Path, monkeypatch) -> None:
         monkeypatch.setattr("kiro_crew.embeddings.config_dir", lambda: tmp_path)
@@ -803,3 +824,20 @@ class TestSingletons:
         first = model_download_manager()
         reset_download_manager()
         assert model_download_manager() is not first
+
+
+class TestCommunityNoDefaultCdn:
+    @pytest.mark.asyncio
+    async def test_empty_default_url_skips_download(self, tmp_path: Path, monkeypatch) -> None:
+        monkeypatch.setattr(embeddings_mod, "_DEFAULT_MODEL_URL", "")
+        monkeypatch.delenv("KIROCREW_EMBED_MODEL_URL", raising=False)
+        monkeypatch.delenv("KIROCREW_SKIP_MODEL_DOWNLOAD", raising=False)
+        monkeypatch.setattr(embeddings_mod, "_read_memory_config", lambda: {})
+        monkeypatch.setattr(embeddings_mod, "config_dir", lambda: tmp_path)
+        monkeypatch.setattr(embeddings_mod, "embedding_model_is_custom", lambda: False)
+        reset_download_manager()
+        assert embeddings_mod._resolve_model_url() == ""
+        mgr = ModelDownloadManager(target=tmp_path / "model.gguf")
+        assert await mgr.ensure_model(attempts=1) is False
+        assert mgr.status["step"] == "unconfigured"
+        assert start_background_model_download() is None

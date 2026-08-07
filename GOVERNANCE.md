@@ -1,10 +1,11 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Governance
 
-This file governs the unofficial `serejaris/KiroCrew-Codex` community fork.
+This file governs the unofficial `serejaris/vibecoderscrew` community fork.
 Upstream KiroCrew has its own maintainers and governance in
 [`kirodotdev/KiroCrew`](https://github.com/kirodotdev/KiroCrew).
 
-This document covers who makes decisions in Kiro Crew, how those decisions get made, and how someone becomes one of the people making them. [CONTRIBUTING.md](CONTRIBUTING.md) covers how to contribute, and the two are meant to be read together.
+This document covers who makes decisions in Vibecoders Crew, how those decisions get made, and how someone becomes one of the people making them. [CONTRIBUTING.md](CONTRIBUTING.md) covers how to contribute, and the two are meant to be read together.
 
 ## Who decides
 
@@ -12,7 +13,7 @@ This document covers who makes decisions in Kiro Crew, how those decisions get m
 
 **Contributors** are everyone who sends code, documentation, apps, skills, tests, or translations, and everyone who takes part in feature discussion. Contributing does not require permission, only [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-**Users** are everyone running Kiro Crew. Filing an issue about what is broken or missing is a real contribution to the project's direction, and most changes in direction start there.
+**Users** are everyone running Vibecoders Crew. Filing an issue about what is broken or missing is a real contribution to the project's direction, and most changes in direction start there.
 
 ## How decisions get made
 
@@ -34,6 +35,6 @@ Maintainers can step down whenever they want. A maintainer who has been unreacha
 
 ## Trademarks and amendments
 
-**Trademarks are governed separately.** The Kiro and Kiro Crew names and logos are trademarks, and they are not licensed under this project's software license. See [NOTICE](NOTICE) for ownership. Maintainers have no authority to license, transfer, or redefine their use. The code in this repository is open source. The marks are not.
+**Trademarks are governed separately.** The Kiro and Vibecoders Crew names and logos are trademarks, and they are not licensed under this project's software license. See [NOTICE](NOTICE) for ownership. Maintainers have no authority to license, transfer, or redefine their use. The code in this repository is open source. The marks are not.
 
 **This document changes the same way anything else does**, by a pull request that maintainers agree to. Governance is expected to grow as the project does, and a project with more maintainers than this one may well need more structure than this. One constraint holds regardless. Any change that makes this project less open breaks a promise already made to the people depending on it, and this project does not do rug pulls. Opening governance further is always available. Closing it back down is not.

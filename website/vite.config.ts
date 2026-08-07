@@ -1,3 +1,5 @@
+// Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+// See NOTICE and CHANGELOG.md for the nature of the modifications.
 // The general test DOM is happy-dom (see `test.environment` below) for speed.
 // DOMPurify security-boundary tests opt into current jsdom per-file because
 // DOMPurify officially supports jsdom and explicitly warns against happy-dom as

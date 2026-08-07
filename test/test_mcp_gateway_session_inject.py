@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Tests for shared-MCP-gateway delivery via ACP ``session/new`` injection.
 
 The pooling mechanism under test: kiro-cli honours a server injected in

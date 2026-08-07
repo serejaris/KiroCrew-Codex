@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Maintainers
 
 Maintainers have commit access to this repository and decide what lands in it. If you need a review, an answer on a design question, or a decision unstuck, these are the people to reach. Tagging the whole list on a pull request is fine.
@@ -22,7 +23,7 @@ None yet.
 ## Reaching maintainers
 
 For anything about this fork, open a
-[GitHub issue](https://github.com/serejaris/KiroCrew-Codex/issues). Public
+[GitHub issue](https://github.com/serejaris/vibecoderscrew/issues). Public
 questions get answered where the next person with the same question can find
 them. Upstream issues belong in
 [`kirodotdev/KiroCrew`](https://github.com/kirodotdev/KiroCrew/issues).

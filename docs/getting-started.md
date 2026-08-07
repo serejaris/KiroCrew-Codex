@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Getting Started with KiroCrew
 
 This guide walks you through installing KiroCrew, running it for the first time,
@@ -18,8 +19,8 @@ with a web dashboard you can chat with.
 The Codex Edition release is source-only:
 
 ```bash
-git clone https://github.com/serejaris/KiroCrew-Codex.git
-cd KiroCrew-Codex
+git clone https://github.com/serejaris/vibecoderscrew.git
+cd vibecoderscrew
 
 # 1. Build the frontend dashboard
 cd website && npm install && npm run build && cd ..
@@ -60,7 +61,7 @@ credentials. Skip the Slack tokens to run in **dashboard-only mode**.
 
 ### 2. Select Codex
 
-KiroCrew Codex Edition reuses your existing Codex login:
+VibecodersCrew reuses your existing Codex login:
 
 ```bash
 codex login status

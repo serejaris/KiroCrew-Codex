@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Configuration loader for KiroCrew.
 
 Config location: ~/.kiro/crew/config.json (overridden by KIROCREW_HOME)
@@ -2209,7 +2211,7 @@ class SkillsConfig:
 class TelemetryConfig:
     """Inherited telemetry settings retained for config compatibility.
 
-    KiroCrew Codex Edition ignores these values. Metric call sites stay no-op,
+    VibecodersCrew ignores these values. Metric call sites stay no-op,
     no local shards are written, and no network exporter is constructed.
     """
 
@@ -2218,7 +2220,7 @@ class TelemetryConfig:
         metadata=_meta(
             "Enabled",
             "Retained for upstream configuration compatibility. All telemetry "
-            "collection is hard-disabled in KiroCrew Codex Edition.",
+            "collection is hard-disabled in VibecodersCrew.",
         ),
     )
     local_dir: str = field(
@@ -2259,7 +2261,7 @@ class TelemetryConfig:
         metadata=_meta(
             "OTLP Endpoint",
             "Retained for upstream configuration compatibility and ignored. "
-            "KiroCrew Codex Edition never constructs an OTLP exporter.",
+            "VibecodersCrew never constructs an OTLP exporter.",
             sensitive=True,
         ),
     )
@@ -2268,7 +2270,7 @@ class TelemetryConfig:
         metadata=_meta(
             "Anonymous Usage Beacon",
             "Retained for upstream configuration compatibility. Outbound "
-            "product telemetry is hard-disabled in KiroCrew Codex Edition, "
+            "product telemetry is hard-disabled in VibecodersCrew, "
             "so this value cannot enable a network heartbeat.",
         ),
     )
@@ -2277,7 +2279,7 @@ class TelemetryConfig:
         metadata=_meta(
             "Beacon Endpoint",
             "Retained for upstream configuration compatibility and empty by "
-            "default. KiroCrew Codex Edition ignores it because outbound "
+            "default. VibecodersCrew ignores it because outbound "
             "product telemetry is hard-disabled.",
         ),
     )
@@ -3840,7 +3842,7 @@ class KiroCrewConfig:
         metadata=_meta(
             "Telemetry",
             "Inherited telemetry settings. Collection and export are "
-            "hard-disabled in KiroCrew Codex Edition.",
+            "hard-disabled in VibecodersCrew.",
         ),
     )
     stt: SttConfig = field(

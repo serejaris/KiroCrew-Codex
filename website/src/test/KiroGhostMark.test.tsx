@@ -1,3 +1,5 @@
+// Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+// See NOTICE and CHANGELOG.md for the nature of the modifications.
 /**
  * The Kiro ghost brand mark (`components/KiroGhostMark.tsx`) and its use as the
  * "Agent Capabilities" nav icon.

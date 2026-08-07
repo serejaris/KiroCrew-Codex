@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Anonymous daily-heartbeat beacon — product analytics, stdlib-only.
 
 Answers questions no local signal can: how many installations are actually
@@ -627,7 +629,7 @@ def telemetry_permitted(*, enabled: bool, audit_tool: str = "") -> tuple[bool, s
     installs on any given day.
     """
     if not OUTBOUND_TELEMETRY_ENABLED:
-        return False, "disabled in KiroCrew Codex Edition"
+        return False, "disabled in VibecodersCrew"
     if _env_truthy(DISABLE_ENV):
         return False, f"opted out via {DISABLE_ENV}"
     if is_governance_pinned_off(audit_tool=audit_tool):
@@ -752,7 +754,7 @@ def status(endpoint: str, *, enabled: bool, app_version: str) -> dict[str, objec
             "endpoint_configured": False,
             "install_id": "(disabled)",
             "would_send": False,
-            "reason": "disabled in KiroCrew Codex Edition",
+            "reason": "disabled in VibecodersCrew",
             "governance_pinned_off": True,
             "payload_preview": {},
         }
@@ -795,9 +797,9 @@ def status(endpoint: str, *, enabled: bool, app_version: str) -> dict[str, objec
 
 def format_status(info: dict[str, object]) -> str:
     """Render :func:`status` as human-readable CLI output."""
-    if info.get("reason") == "disabled in KiroCrew Codex Edition":
+    if info.get("reason") == "disabled in VibecodersCrew":
         return (
-            "Telemetry is hard-disabled in KiroCrew Codex Edition.\n"
+            "Telemetry is hard-disabled in VibecodersCrew.\n"
             "No heartbeat, install receipt, local metrics, or OTLP export is produced."
         )
     enabled = "yes" if info["beacon_enabled"] else "no"

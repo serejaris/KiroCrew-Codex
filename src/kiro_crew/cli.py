@@ -1,13 +1,15 @@
-"""Kiro Crew CLI — personal AI agent.
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
+"""Vibecoders Crew CLI — personal AI agent.
 
 Commands:
     kirocrew chat -m "message"    Send a single message
     kirocrew chat                 Interactive chat mode
-    kirocrew gateway              Start the Kiro Crew server (dashboard + Slack)
+    kirocrew gateway              Start the Vibecoders Crew server (dashboard + Slack)
     kirocrew gateway --seed NAME  Populate $KIROCREW_HOME from fixture NAME, then start the gateway
     kirocrew status               Show runtime stats
     kirocrew run TASK.md          Run an autonomous task from a spec file
-    kirocrew update               Update Kiro Crew via git fetch + rebuild
+    kirocrew update               Update Vibecoders Crew via git fetch + rebuild
     kirocrew cron list|add|remove Manage scheduled jobs
     kirocrew spawn run "task"     Spawn a background subagent
     kirocrew spawn list           List subagents
@@ -735,9 +737,9 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
         prog="kirocrew",
-        description="Kiro Crew — personal AI agent",
+        description="Vibecoders Crew — personal AI agent",
     )
-    parser.add_argument("--version", action="version", version=f"kirocrew {__version__}")
+    parser.add_argument("--version", action="version", version=f"vibecoderscrew {__version__}")
     parser.add_argument(
         "--verbose",
         "-v",
@@ -791,10 +793,10 @@ Examples:
     chat_parser.add_argument("--agent", help="Agent to use (default: from config)")
 
     # doctor
-    sub.add_parser("doctor", help="Verify Kiro Crew setup")
+    sub.add_parser("doctor", help="Verify Vibecoders Crew setup")
 
     # gateway
-    gw_parser = sub.add_parser("gateway", help="Start the Kiro Crew server (dashboard + Slack)")
+    gw_parser = sub.add_parser("gateway", help="Start the Vibecoders Crew server (dashboard + Slack)")
     gw_parser.add_argument(
         "--slack-only",
         action="store_true",
@@ -889,7 +891,7 @@ Examples:
     setup_parser.add_argument(
         "--electron-only",
         action="store_true",
-        help="Only install the Kiro Crew desktop app (macOS), skip other setup",
+        help="Only install the Vibecoders Crew desktop app (macOS), skip other setup",
     )
     setup_parser.add_argument(
         "--clean",
@@ -1058,7 +1060,7 @@ Examples:
     )
 
     # snapshot / restore
-    snap_parser = sub.add_parser("snapshot", help="Create a portable backup of Kiro Crew state")
+    snap_parser = sub.add_parser("snapshot", help="Create a portable backup of Vibecoders Crew state")
     snap_parser.add_argument(
         "output_dir",
         nargs="?",
@@ -1070,7 +1072,7 @@ Examples:
         "--list", action="store_true", dest="list_snapshots", help="List existing snapshots"
     )
 
-    rest_parser = sub.add_parser("restore", help="Restore Kiro Crew state from a snapshot")
+    rest_parser = sub.add_parser("restore", help="Restore Vibecoders Crew state from a snapshot")
     rest_parser.add_argument("snapshot", nargs="?", help="Path to snapshot .tar.gz")
     rest_parser.add_argument(
         "--mode",
@@ -1225,10 +1227,10 @@ Examples:
     pod_cleanup = pod_sub.add_parser("_cleanup")
     pod_cleanup.add_argument("name")
 
-    sub.add_parser("update", help="Update Kiro Crew to the latest version")
+    sub.add_parser("update", help="Update Vibecoders Crew to the latest version")
 
     # stop
-    stop_parser = sub.add_parser("stop", help="Stop a running Kiro Crew gateway")
+    stop_parser = sub.add_parser("stop", help="Stop a running Vibecoders Crew gateway")
     stop_parser.add_argument(
         "--port",
         type=int,
@@ -1246,7 +1248,7 @@ Examples:
     # otherwise SIGTERMs the foreground gateway and respawns it detached so the
     # shell returns immediately. Mirrors `stop`.
     restart_parser = sub.add_parser(
-        "restart", help="Restart a running Kiro Crew gateway (service-aware)"
+        "restart", help="Restart a running Vibecoders Crew gateway (service-aware)"
     )
     restart_parser.add_argument(
         "--port",
@@ -1267,7 +1269,7 @@ Examples:
     # auto-restarts on crash, and auto-starts on boot.
     svc_parser = sub.add_parser(
         "service",
-        help="Manage the Kiro Crew gateway as a system service (requires sudo on Linux)",
+        help="Manage the Vibecoders Crew gateway as a system service (requires sudo on Linux)",
     )
     svc_sub = svc_parser.add_subparsers(dest="service_action")
     svc_sub.add_parser("install", help="Install and start the gateway service (sudo on Linux)")
@@ -1278,7 +1280,7 @@ Examples:
     # AWS; credentials resolved by the aws CLI, never stored by KiroCrew).
     cloud_parser = sub.add_parser(
         "cloud",
-        help="Run Kiro Crew on your own AWS EC2 instance",
+        help="Run Vibecoders Crew on your own AWS EC2 instance",
         epilog="""
 Examples:
   kirocrew cloud launch                  # interactive: provision + configure + open dashboard
@@ -1328,7 +1330,7 @@ Examples:
         help="On bootstrap failure, keep the instance (disable rollback) for inspection",
     )
 
-    _c_list = cloud_sub.add_parser("list", help="List your Kiro Crew cloud instances")
+    _c_list = cloud_sub.add_parser("list", help="List your Vibecoders Crew cloud instances")
     _cloud_creds_opts(_c_list)
 
     _c_status = cloud_sub.add_parser("status", help="Show one instance's state")
@@ -1625,20 +1627,20 @@ Examples:
     mem_import.add_argument("file", help="Path to JSON file (export format)")
 
     # agent
-    agent_parser = sub.add_parser("agent", help="Manage Kiro Crew agent definitions")
+    agent_parser = sub.add_parser("agent", help="Manage Vibecoders Crew agent definitions")
     agent_sub = agent_parser.add_subparsers(dest="agent_action")
-    agent_sub.add_parser("list", help="List Kiro Crew agents")
-    agent_create = agent_sub.add_parser("create", help="Create a Kiro Crew agent")
+    agent_sub.add_parser("list", help="List Vibecoders Crew agents")
+    agent_create = agent_sub.add_parser("create", help="Create a Vibecoders Crew agent")
     agent_create.add_argument("--name", required=True, help="Agent name")
     agent_create.add_argument("--kiro-agent", default="kirocrew", help="Kiro agent name")
     agent_create.add_argument("--workspace", default="default", help="Workspace name")
     agent_create.add_argument("--memory-store", default="default", help="Memory store name")
-    agent_update = agent_sub.add_parser("update", help="Update a Kiro Crew agent")
+    agent_update = agent_sub.add_parser("update", help="Update a Vibecoders Crew agent")
     agent_update.add_argument("name", help="Agent name to update")
     agent_update.add_argument("--kiro-agent", help="New kiro agent name")
     agent_update.add_argument("--workspace", help="New workspace name")
     agent_update.add_argument("--memory-store", help="New memory store name")
-    agent_delete = agent_sub.add_parser("delete", help="Delete a Kiro Crew agent")
+    agent_delete = agent_sub.add_parser("delete", help="Delete a Vibecoders Crew agent")
     agent_delete.add_argument("name", help="Agent name to delete")
 
     # workspace
@@ -1672,7 +1674,7 @@ Examples:
     # app
     app_parser = sub.add_parser(
         "app",
-        help="Manage Kiro Crew apps",
+        help="Manage Vibecoders Crew apps",
         epilog="""
 Examples:
   kirocrew app install /path/to/oncall-watchtower

@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Running KiroCrew in Docker
 
 > The published `ghcr.io/kirodotdev/kirocrew` image belongs to upstream and

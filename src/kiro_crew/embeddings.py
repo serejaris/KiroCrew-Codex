@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """In-process embedding runtime and model download manager.
 
 Embeddings run in-process via the vendored llama-cpp-python runtime
@@ -6,9 +8,9 @@ runtime pip install. The Qwen3-Embedding-0.6B GGUF model is downloaded in
 the background (sha256-verified, with retries) and installed persistently
 to ``~/.kiro/crew/models/``. Sources are tried in order: a byte-identical
 blob salvaged from a legacy Ollama install, then the public CloudFront CDN
-(plain HTTPS — no git access, no cloud SDK). ``KIROCREW_EMBED_MODEL_URL``
-(or the ``memory.embed_model_url`` config knob) overrides the CDN URL for
-mirrored/airgapped deployments.
+Only when an operator sets ``KIROCREW_EMBED_MODEL_URL`` or
+``memory.embed_model_url`` (https only). There is no default CDN fetch on
+first install; without a configured URL, memory stays on keyword/FTS search.
 
 A user-supplied model can be run instead of the bundled one by pointing
 ``KIROCREW_EMBED_MODEL_PATH`` (or ``memory.embed_model_path``) at a local
@@ -139,9 +141,10 @@ _MODEL_URL_ENV = "KIROCREW_EMBED_MODEL_URL"
 # _EDITABLE_CONFIG allowlist, so no API caller and no agent can point the
 # embedder at an arbitrary file.
 _MODEL_PATH_ENV = "KIROCREW_EMBED_MODEL_PATH"
-_DEFAULT_MODEL_URL = (
-    "https://d3j0sthz5doyui.cloudfront.net/models/qwen3-embedding-0.6b.gguf"
-)
+# Community policy: no default first-install network fetch.
+# Operators must set KIROCREW_EMBED_MODEL_URL or memory.embed_model_url
+# (or a local memory.embed_model_path) to enable embedding model download.
+_DEFAULT_MODEL_URL = ""
 _HTTP_TIMEOUT_SECS = 1800  # 610MB at >=340KB/s; slower links retry with backoff
 _HTTP_CHUNK_BYTES = 1 << 20
 # Written by the HTTP downloader every ~16MB so the status endpoint can report
@@ -1321,33 +1324,28 @@ def _make_ssl_context() -> ssl.SSLContext:
 
 
 def _resolve_model_url() -> str:
-    """Resolve the model download URL: env > config knob > CDN default.
+    """Resolve the model download URL: env > config knob > empty default.
 
-    The ``KIROCREW_EMBED_MODEL_URL`` env var wins (mirrored/airgapped
-    deployments), then a non-empty ``memory.embed_model_url`` in
-    ``config.json``, then the public CDN default. The config file is read
-    raw (not via the full loader) so the download thread never depends on
-    the config dataclass import graph. Overrides must be ``https://`` —
-    other schemes (``file://``, ``http://``) are rejected so an
-    operator-controlled value can't read local files or fetch plaintext.
-    Whatever the source, the download is only trusted after the streaming
-    sha256 matches ``_GGUF_SHA256``.
+    The ``KIROCREW_EMBED_MODEL_URL`` env var wins, then a non-empty
+    ``memory.embed_model_url`` in ``config.json``. There is no bundled CDN
+    default: an empty result means "do not download". Overrides must be
+    ``https://``. When a URL is used, the download is only trusted after the
+    streaming sha256 matches ``_GGUF_SHA256``.
     """
     env_url = os.environ.get(_MODEL_URL_ENV, "").strip()
     if env_url:
         if env_url.lower().startswith("https://"):
             return env_url
         logger.warning(
-            "%s must be an https:// URL — ignoring the override and using "
-            "the CDN default", _MODEL_URL_ENV,
+            "%s must be an https:// URL — ignoring the override",
+            _MODEL_URL_ENV,
         )
     cfg_url = str(_read_memory_config().get("embed_model_url", "") or "").strip()
     if cfg_url:
         if cfg_url.lower().startswith("https://"):
             return cfg_url
         logger.warning(
-            "memory.embed_model_url must be an https:// URL — ignoring "
-            "the override and using the CDN default",
+            "memory.embed_model_url must be an https:// URL — ignoring the override",
         )
     return _DEFAULT_MODEL_URL
 
@@ -1414,6 +1412,18 @@ class ModelDownloadManager:
             return False
         if os.environ.get(_SKIP_DOWNLOAD_ENV) == "1":
             logger.info("%s=1 — skipping embedding model download", _SKIP_DOWNLOAD_ENV)
+            return False
+        model_url = _resolve_model_url()
+        if not model_url:
+            logger.info(
+                "No embedding model URL configured — skipping download "
+                "(set KIROCREW_EMBED_MODEL_URL or memory.embed_model_url)"
+            )
+            self.status = {
+                "step": "unconfigured",
+                "error": "no embed model URL configured",
+                "attempt": 0,
+            }
             return False
         if self._lock is None:
             self._lock = asyncio.Lock()
@@ -1619,6 +1629,11 @@ def start_background_model_download() -> "asyncio.Task[bool] | None":
         mgr.status = {"step": "ready", "error": "", "attempt": 0}
         return None
     if os.environ.get(_SKIP_DOWNLOAD_ENV) == "1":
+        return None
+    if not _resolve_model_url():
+        logger.info(
+            "No embedding model URL configured — background download not started"
+        )
         return None
     if _download_task is not None and not _download_task.done():
         return _download_task

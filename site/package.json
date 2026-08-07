@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "license": "Apache-2.0",
-  "repository": "https://github.com/serejaris/KiroCrew-Codex",
-  "homepage": "https://github.com/serejaris/KiroCrew-Codex",
+  "repository": "https://github.com/serejaris/vibecoderscrew",
+  "homepage": "https://github.com/serejaris/vibecoderscrew",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

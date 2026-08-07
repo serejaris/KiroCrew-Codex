@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """``kirocrew desktop`` -- read the Electron app's debug metrics artifact.
 
 Why this is a reader and not a query: ``app.getAppMetrics()`` is an Electron-main

@@ -1,11 +1,13 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 [build-system]
 requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kirocrew"
-version = "0.2.0"
-description = "Persistent local AI workspace with OpenAI Codex and Kiro ACP providers"
+name = "vibecoderscrew"
+version = "1.0.0"
+description = "Local AI agent workspace with OpenAI Codex support (independent fork of Kiro Crew)"
 readme = "README.md"
 # macOS (x86_64 + arm64) and Linux (x86_64 + aarch64), CPython 3.10-3.13.
 # Must be declared in this [project] table: when it exists, setuptools reads
@@ -20,12 +22,13 @@ requires-python = ">=3.10"
 dynamic = ["dependencies", "optional-dependencies"]
 
 [project.urls]
-Homepage = "https://github.com/serejaris/KiroCrew-Codex"
-Repository = "https://github.com/serejaris/KiroCrew-Codex"
-Issues = "https://github.com/serejaris/KiroCrew-Codex/issues"
+Homepage = "https://github.com/serejaris/vibecoderscrew"
+Repository = "https://github.com/serejaris/vibecoderscrew"
+Issues = "https://github.com/serejaris/vibecoderscrew/issues"
 
 [project.scripts]
-kirocrew = "kiro_crew.cli:main"
+vibecoderscrew = "kiro_crew.cli:main"
+kirocrew = "kiro_crew.cli:main"  # technical compatibility alias
 
 [dependency-groups]
 # Pinned dev tool versions for reproducible CI. Bump as needed.

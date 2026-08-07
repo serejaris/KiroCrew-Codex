@@ -1,6 +1,7 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Tenets
 
-These are the principles we design and build Kiro Crew by. They are ordered. When two pull against each other, the earlier one wins and the trade-off gets written down.
+These are the principles we design and build Vibecoders Crew by. They are ordered. When two pull against each other, the earlier one wins and the trade-off gets written down.
 
 1. **Safety first.** Every action is gated, auditable, and reversible where it can be, and where it cannot be you are asked first. Security is the foundation, not a feature.
 
@@ -8,9 +9,9 @@ These are the principles we design and build Kiro Crew by. They are ordered. Whe
 
 3. **Easy to use.** Productive in 60 seconds. No configuration required to start, nothing to read first, and no AI expertise. Low floor, high ceiling, smooth path between them. The same goes for working on it: if you can run it, you should be able to change it.
 
-4. **The gateway, not the replacement.** Kiro Crew connects the tools you already use rather than asking you to abandon them. It routes, it remembers across them, and it makes each one more useful than it is alone.
+4. **The gateway, not the replacement.** Vibecoders Crew connects the tools you already use rather than asking you to abandon them. It routes, it remembers across them, and it makes each one more useful than it is alone.
 
-5. **Built as a community.** No two people work the same way, and that is a feature rather than something to normalize away. Skills, agents, and apps exist so anyone can shape Kiro Crew around how they already work, and what one person builds becomes something everyone can use.
+5. **Built as a community.** No two people work the same way, and that is a feature rather than something to normalize away. Skills, agents, and apps exist so anyone can shape Vibecoders Crew around how they already work, and what one person builds becomes something everyone can use.
 
 6. **Knowledge that flows, with boundaries.** Memory is local-first and private by default. Sharing is explicit, controlled, and auditable. Knowledge should propagate from a person to a team to an organization to a company, but sensitive information must never spread, and the right to forget is built in.
 

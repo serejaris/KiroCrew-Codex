@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Rules for AI Assistants
 
 This is the **single source of truth** for working in this repository (the
@@ -5,7 +6,7 @@ frontend has its own `website/AGENTS.md`). Read it before non-trivial changes.
 
 ## What this is
 
-This checkout is the unofficial `serejaris/KiroCrew-Codex` community fork.
+This checkout is the unofficial `serejaris/vibecoderscrew` community fork.
 Its default branch is `codex-main`. Releases are source-only previews, all
 telemetry is hard-disabled, and the Amazon update/signing/CDN lanes are outside
 this fork's release boundary.

@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Governance Model (two-level Policy ∩ Profile)
 
 The `kiro_crew.platform.governance` + `kiro_crew.platform.governance_profiles`
@@ -1136,7 +1137,7 @@ scope growth without server-recorded grants is not covered by this decision.
 
 ### Anonymous telemetry — `capabilities.telemetry`
 
-> **KiroCrew Codex Edition override.** Product telemetry is hard-disabled at
+> **VibecodersCrew override.** Product telemetry is hard-disabled at
 > the distribution boundary. The backend heartbeat/install-receipt gate and
 > local/OTLP metrics gate are compiled off; Electron profiling is compiled off;
 > configuration and API writes that try to enable telemetry are rejected. The

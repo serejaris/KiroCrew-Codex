@@ -1,12 +1,14 @@
+// Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+// See NOTICE and CHANGELOG.md for the nature of the modifications.
 /**
  * instance-guard.js — cross-app gateway ownership guard.
  *
- * The nightly app ("KiroCrewCodex Nightly.app") and the production app
- * ("KiroCrewCodex.app") are separate INSTALLS sharing ONE data home
+ * The nightly app ("VibecodersCrew Nightly.app") and the production app
+ * ("VibecodersCrew.app") are separate INSTALLS sharing ONE data home
  * (~/.kiro/crew), and ONE gateway port (5476). That makes the port a mutex:
  * only one KiroCrew-family gateway may run at a time. Electron's
  * requestSingleInstanceLock is keyed on userData (per productName), so it
- * cannot stop "KiroCrewCodex Nightly" launching while "KiroCrewCodex" runs — this
+ * cannot stop "VibecodersCrew Nightly" launching while "VibecodersCrew" runs — this
  * module covers that cross-app seam.
  *
  * Decision inputs: our own stamped version (identity family derives from it,
@@ -37,8 +39,8 @@ const HEALTH_IDENTITY_PATH = "/api/health";
 const FAMILY_META = {
   // appName is the technical Finder/AppleScript target. displayName is the
   // product spelling shown in dialogs and status text.
-  prod: { appName: "KiroCrewCodex", displayName: "KiroCrew Codex" },
-  nightly: { appName: "KiroCrewCodex Nightly", displayName: "KiroCrew Codex Nightly" },
+  prod: { appName: "VibecodersCrew", displayName: "Vibecoders Crew" },
+  nightly: { appName: "VibecodersCrew Nightly", displayName: "Vibecoders Crew Nightly" },
 };
 
 /**

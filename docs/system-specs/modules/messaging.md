@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Messaging Transport Module
 
 Last Updated: 2026-08-01 (channel sessions surface-aware: turn dispatch carries an authoritative `runtime_source` into prompt construction independent of the stable session key, channel dispatchers surface a newly-created session in the dashboard immediately via the shared `ChannelTurn.after_persist` hook instead of waiting for the reconciler, the main-session mirror targets the user's configured channels, and the sidebar renders per-channel brand icons; channel output framing: shared TurnDriver strips streamed steering protocol markers, converts them to structured boundaries, and replaces summary-bearing compaction notices with a terse receipt; Discord transcript replay drops legacy protocol/compaction text while preserving the stored audit record; direct Slack/Discord/Telegram compaction commands no longer interpolate summary bodies; Initial module spec: channel-neutral `kiro_crew.messaging` package — Layer 1 `MessagingTransport`/`TransportCapabilities`/`InboundMessage`, Layer 2 `TurnDriver` approval ladder, Layer 2b `Renderer`/`OutputEvent`/`chunk_text`, Layer 3 session-key namespacing + ConversationState generations; Slack reference impl + `messaging.use_transport` flag, default ON in KiroCrew; 2026-07-24: added Managed-MCP session-key resolution invariant — every channel transport-dispatch surface (Telegram DM + forum, Discord, Slack, Webex, WeCom) now publishes session_pid_<pid>.txt via the shared messaging.identity.publish_turn_identity helper so managed MCP tools resolve X-Session-Key, #232; 2026-07-24: WeCom settings API — GET/PUT /api/wecom/config with dual credential slots (WECOM_BOT_ID + WECOM_SECRET), Settings→WeCom panel on the shared BotChannelPanel, wecom_connected/wecom_connect_error kept live via WeComClient.on_status transitions)
@@ -321,7 +322,7 @@ REST channel lookup must confirm Discord type 10/11/12 before dispatch. Normal
 guild channels are always rejected. An approved thread is a shared disclosure
 boundary: every member who can view it can read agent/tool output. Enabling any
 thread also means Discord delivers message content from every server channel
-the bot can see, although Kiro Crew immediately discards traffic outside
+the bot can see, although Vibecoders Crew immediately discards traffic outside
 approved threads. Bot-authored messages (including our own) are dropped as a
 loop guard. `DISCORD_BOT_TOKEN` is on the sandbox agent env denylist.
 

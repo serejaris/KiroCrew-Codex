@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Target/input policy and egress redaction for computer use.
 
 Pure decision logic — no ctypes, no I/O, no platform calls. Every function here

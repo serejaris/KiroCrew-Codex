@@ -1,3 +1,5 @@
+// Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+// See NOTICE and CHANGELOG.md for the nature of the modifications.
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -33,7 +35,7 @@ describe("macOS bundle naming", () => {
   );
 
   it("keeps CFBundleName aligned with productName for Electron helpers", () => {
-    assert.equal(pkg.build.productName, "KiroCrewCodex");
+    assert.equal(pkg.build.productName, "VibecodersCrew");
     assert.equal(
       Object.hasOwn(extendInfo, "CFBundleName"),
       false,
@@ -42,10 +44,10 @@ describe("macOS bundle naming", () => {
   });
 
   it("uses CFBundleDisplayName for spaced stable and nightly names", () => {
-    assert.equal(extendInfo.CFBundleDisplayName, "KiroCrew Codex");
+    assert.equal(extendInfo.CFBundleDisplayName, "Vibecoders Crew");
     assert.match(
       buildScript,
-      /-c\.mac\.extendInfo\.CFBundleDisplayName=KiroCrew Codex Nightly/
+      /-c\.mac\.extendInfo\.CFBundleDisplayName=Vibecoders Crew Nightly/
     );
     assert.doesNotMatch(buildScript, /-c\.mac\.extendInfo\.CFBundleName=/);
   });

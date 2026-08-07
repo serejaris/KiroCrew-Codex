@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Running KiroCrew on a Remote Host (24/7)
 
 Run KiroCrew on an always-on remote Linux host — a VPS, a cloud VM (EC2,
@@ -63,7 +64,7 @@ for the full walkthrough:
 
 ```bash
 # 1. Clone and install the backend
-git clone https://github.com/serejaris/KiroCrew-Codex.git
+git clone https://github.com/serejaris/vibecoderscrew.git
 cd kirocrew
 
 # 2. Build the frontend bundle

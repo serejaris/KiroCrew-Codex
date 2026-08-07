@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 name: Bug report
 description: Something in KiroCrew is broken or behaves differently than documented.
 labels: ["bug"]
@@ -9,7 +11,7 @@ body:
         otherwise have to ask for, so filling them in usually saves a round trip.
 
         Do NOT use this form for a security vulnerability. Report those privately
-        per [SECURITY.md](https://github.com/serejaris/KiroCrew-Codex/blob/codex-main/SECURITY.md).
+        per [SECURITY.md](https://github.com/serejaris/vibecoderscrew/blob/codex-main/SECURITY.md).
 
   - type: checkboxes
     id: search

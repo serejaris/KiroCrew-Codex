@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """CLI subcommand handlers — cron, spawn, workspace, app, agent, security, eval, learn, memory."""
 
 from __future__ import annotations
@@ -1655,7 +1657,7 @@ def _telemetry(args: argparse.Namespace) -> None:
     want = action == "enable"
     if want and not beacon.OUTBOUND_TELEMETRY_ENABLED:
         print(
-            "❌ Telemetry is hard-disabled in KiroCrew Codex Edition.",
+            "❌ Telemetry is hard-disabled in VibecodersCrew.",
             file=sys.stderr,
         )
         print("   No configuration change was written.", file=sys.stderr)

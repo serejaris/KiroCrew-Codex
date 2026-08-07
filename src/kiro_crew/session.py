@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Session manager — maps Slack thread_ts to LLM provider sessions.
 
 Each Slack thread gets its own LLMProvider instance. Sessions are

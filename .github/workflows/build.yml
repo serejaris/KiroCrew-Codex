@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 name: Build
 
 on:
@@ -58,13 +60,12 @@ jobs:
       - name: Verify wheel installs cleanly
         run: |
           pip install dist/*.whl
-          kirocrew --version
+          vibecoderscrew --version || kirocrew --version
 
-      - name: Upload wheel
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: wheel
-          path: dist/*.whl
+      # Source-only public distribution: do not publish unsigned wheels as
+      # downloadable CI artifacts from this repository.
+      - name: Confirm wheel built (no public artifact upload)
+        run: ls -la dist/*.whl
 
   build-desktop:
     name: Build Desktop (${{ matrix.os }})
@@ -92,20 +93,14 @@ jobs:
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
 
-      - name: Upload desktop artifact (macOS)
+      - name: Confirm desktop build (macOS, no public artifact upload)
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: desktop-macos-arm64
-          path: |
-            website/electron/dist/*.dmg
-            website/electron/dist/*.zip
-          if-no-files-found: warn
+        run: |
+          ls -la website/electron/dist || true
+          echo "Source-only policy: unsigned desktop artifacts are not uploaded."
 
-      - name: Upload desktop artifact (Linux)
+      - name: Confirm desktop build (Linux, no public artifact upload)
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: desktop-linux-x64
-          path: website/electron/dist/*.AppImage
-          if-no-files-found: warn
+        run: |
+          ls -la website/electron/dist || true
+          echo "Source-only policy: unsigned desktop artifacts are not uploaded."

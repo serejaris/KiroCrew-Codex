@@ -1,6 +1,7 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Metrics Telemetry Module
 
-> **KiroCrew Codex Edition policy:** all telemetry is hard-disabled. Metric call
+> **VibecodersCrew policy:** all telemetry is hard-disabled. Metric call
 > sites resolve to no-ops; heartbeat/install receipts, local JSONL collection,
 > and OTLP export cannot be enabled by config or environment variables. The
 > detailed implementation below is retained as an auditable upstream reference.

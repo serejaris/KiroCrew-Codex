@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Regression tests for the boot-path / import-cost remediation.
 
 Each test here pins one specific cost that was measured on the startup path and

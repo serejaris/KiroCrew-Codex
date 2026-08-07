@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """MCP server exposing spawn, learn, and task tools to kiro-cli.
 
 Runs as ``kirocrew mcp-core`` — kiro-cli spawns it as a child process

@@ -1,7 +1,7 @@
 {
-  "name": "kirocrew-electron-mac",
-  "version": "0.2.0",
-  "description": "KiroCrew Codex Edition \u2014 community AI agent desktop app",
+  "name": "vibecoderscrew-electron",
+  "version": "1.0.0",
+  "description": "VibecodersCrew \u2014 community AI agent desktop app",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -25,8 +25,8 @@
     "js-yaml": "4.3.1"
   },
   "build": {
-    "appId": "dev.serejaris.kirocrew.codex",
-    "productName": "KiroCrewCodex",
+    "appId": "tech.serejaris.vibecoderscrew",
+    "productName": "VibecodersCrew",
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "icon.png",
@@ -41,8 +41,8 @@
       "notarize": false,
       "x64ArchFiles": "{**/backend-dist/**,**/backend-dist/**/.*/**}",
       "extendInfo": {
-        "CFBundleDisplayName": "KiroCrew Codex",
-        "NSMicrophoneUsageDescription": "Kiro Crew uses the microphone for voice input and dictation in chat. Audio is captured only while you hold or toggle the mic button."
+        "CFBundleDisplayName": "Vibecoders Crew",
+        "NSMicrophoneUsageDescription": "Vibecoders Crew uses the microphone for voice input and dictation in chat. Audio is captured only while you hold or toggle the mic button."
       }
     },
     "afterSign": "scripts/notarize.js",
@@ -127,8 +127,8 @@
       }
     },
     "squirrelWindows": {
-      "name": "KiroCrewCodex",
-      "iconUrl": "https://raw.githubusercontent.com/serejaris/KiroCrew-Codex/codex-main/website/electron/icon.ico"
+      "name": "VibecodersCrew",
+      "iconUrl": "https://raw.githubusercontent.com/serejaris/vibecoderscrew/codex-main/website/electron/icon.ico"
     }
   },
   "author": "Sereja Ris"

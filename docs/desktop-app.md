@@ -1,7 +1,8 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # KiroCrew Desktop App
 
-> KiroCrew Codex Edition uses the distinct application identity
-> `dev.serejaris.kirocrew.codex` / `KiroCrewCodex.app`, ships no signed binaries,
+> VibecodersCrew uses the distinct application identity
+> `dev.serejaris.kirocrew.codex` / `VibecodersCrew.app`, ships no signed binaries,
 > and disables the inherited updater. Signing, CDN, and channel sections later
 > in this document describe the upstream project and are retained as reference.
 
@@ -34,10 +35,10 @@ The electron-builder configuration lives in
 [`website/electron/package.json`](../website/electron/package.json):
 
 - **appId:** `dev.serejaris.kirocrew.codex`
-- **productName:** `KiroCrewCodex`
-- macOS display name: `KiroCrew Codex` via `CFBundleDisplayName`; `CFBundleName`
+- **productName:** `VibecodersCrew`
+- macOS display name: `VibecodersCrew` via `CFBundleDisplayName`; `CFBundleName`
   remains aligned with `productName` because Electron uses it to locate the
-  `KiroCrewCodex Helper` app bundles during startup
+  `VibecodersCrew Helper` app bundles during startup
 - mac target: `dmg` (category `public.app-category.developer-tools`)
 - linux target: `AppImage` (category `Development`)
 
@@ -275,7 +276,7 @@ HTTPS installer for the host platform, validates its size and
 platform-specific marker in memory, and pipes those same bytes to the fixed
 system interpreter. The installer itself verifies the downloaded Kiro CLI
 package. The second step runs `kiro-cli login --use-device-flow`, displays the
-secure sign-in URL and code, and opens the Kiro Crew dashboard only after
+secure sign-in URL and code, and opens the Vibecoders Crew dashboard only after
 `kiro-cli whoami` succeeds.
 An installed candidate that cannot start is shown as needing repair rather than
 as merely signed out; one that runs is directly usable for sign-in regardless of
@@ -289,7 +290,7 @@ minimal allowlisted environment rather than the desktop shell's credentials;
 version probes use the strict OS sandbox and hide every known Kiro identity
 store. `whoami` and device-login run for any runnable candidate; they use a
 standard sandbox with a temporary home containing only Kiro identity token
-files, so unrelated AWS, SSH, GitHub, Kubernetes, and Kiro Crew state remain
+files, so unrelated AWS, SSH, GitHub, Kubernetes, and Vibecoders Crew state remain
 unavailable, and POSIX auth still executes a private snapshot of the exact
 resolved bytes. Timed-out commands signal a POSIX process group only
 while its leader still anchors that identity; on Windows, exact retained process

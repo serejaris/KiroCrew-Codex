@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 ## LLM Provider Abstraction
 
 KiroCrew supports `kiro-cli` over ACP and the official OpenAI Codex App Server.

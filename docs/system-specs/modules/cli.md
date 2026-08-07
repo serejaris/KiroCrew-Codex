@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # CLI Module
 
 Last Updated: 2026-08-01 (standalone wheel installation now requires a
@@ -225,7 +226,7 @@ Auth calls execute the user's installed binary IN PLACE, never a private copy of
 its bytes — a multi-call Kiro CLI resolves its sibling subcommand executable
 relative to its own path, so a copy strands it (see security.md).
 Sign-in itself is delegated to Kiro CLI: `login --use-device-flow` runs in the
-standard sandbox against the user's real home, with only the Kiro Crew data
+standard sandbox against the user's real home, with only the Vibecoders Crew data
 homes hidden, and the CLI writes its own credential store exactly as it does
 from a terminal. KiroCrew stages nothing and publishes nothing, so no staged
 state has to be reconciled after a failure, timeout, or cancellation. The

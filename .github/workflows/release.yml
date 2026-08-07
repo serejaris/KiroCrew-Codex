@@ -1,3 +1,7 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
+# Community fork: upstream Amazon signing/CDN/release automation is not used.
+# Prefer GitHub source tags over this workflow for public distribution.
 name: Release
 
 on:

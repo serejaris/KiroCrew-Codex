@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Installing & Testing KiroCrew on Windows
 
 KiroCrew runs **natively on Windows** as a Python **source install**.
@@ -36,7 +37,7 @@ The source install below remains the fully supported path.
 | Tool | Why | Get it |
 |------|-----|--------|
 | **Git for Windows** | clone the repo | https://git-scm.com/download/win |
-| **kiro-cli** | the agent backend (ACP); the first dashboard launch can install it | Kiro Crew setup page or kiro-cli's native Windows release |
+| **kiro-cli** | the agent backend (ACP); the first dashboard launch can install it | Vibecoders Crew setup page or kiro-cli's native Windows release |
 | **Python 3.10–3.12** | the venv runtime (3.12 preferred; numpy 1.x has no 3.13 wheel) | https://python.org — install user-scoped, or `winget install Python.Python.3.12` |
 | **Node.js** (optional) | builds the full React dashboard; without it the gateway serves the prebuilt bundle | `winget install OpenJS.NodeJS.LTS` |
 
@@ -51,7 +52,7 @@ on `PATH` can still confuse other tooling. Prefer a real CPython install.
 From a clone, in PowerShell:
 
 ```powershell
-git clone https://github.com/serejaris/KiroCrew-Codex.git
+git clone https://github.com/serejaris/vibecoderscrew.git
 cd kirocrew
 
 # Build the frontend first (optional but recommended) so the dashboard is bundled:
@@ -74,7 +75,7 @@ kirocrew setup
 kirocrew gateway
 ```
 
-Open the dashboard URL printed by the gateway. On first launch, Kiro Crew checks
+Open the dashboard URL printed by the gateway. On first launch, Vibecoders Crew checks
 the **Windows gateway host** for a runnable and authenticated Kiro CLI. If it is
 missing, choose **Install Kiro CLI** to download and run the fixed official
 PowerShell installer; if it is signed out, choose **Sign in to Kiro** and

@@ -1,10 +1,12 @@
-"""KiroCrew — open-source personal AI agent."""
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
+"""VibecodersCrew — local AI agent workspace (independent fork of Kiro Crew)."""
 
 from __future__ import annotations
 
 import asyncio
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 
 
 class _LazyShutdownEvent:

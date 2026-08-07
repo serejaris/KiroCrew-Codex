@@ -1,6 +1,8 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Telemetry provider wiring — builds the process-global ``MetricsRecorder``.
 
-KiroCrew Codex Edition hard-disables this entire collection pipeline. The
+VibecodersCrew hard-disables this entire collection pipeline. The
 inherited implementation remains readable for upstream merges and its tests,
 but the production gate below always returns a no-op recorder and refuses OTLP
 even when legacy configuration or environment variables request it.

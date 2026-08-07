@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Subprocess-spawn audit — security-review finding 92e24570.
 
 Every subprocess spawn in ``src/kiro_crew`` must be either

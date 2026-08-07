@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Installing & Building KiroCrew
 
 This guide covers how to build, install, and run KiroCrew. There are three ways

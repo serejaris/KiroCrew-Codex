@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Core handlers — page serving, branding, STT, config, SEL, auth, session workspace."""
 
 from __future__ import annotations
@@ -194,7 +196,7 @@ async def api_branding(request: web.Request) -> web.Response:
     cfg = KiroCrewConfig.load()
     return web.json_response(
         {
-            "bot_name": cfg.dashboard.bot_name or "Kiro Crew",
+            "bot_name": cfg.dashboard.bot_name or "Vibecoders Crew",
             "avatar": "/logo.png",
         }
     )
@@ -1411,7 +1413,7 @@ async def api_kirocrew_config_patch(request: web.Request) -> web.Response:
     if path_key == "telemetry.beacon_enabled" and value is True:
         if not beacon.OUTBOUND_TELEMETRY_ENABLED:
             return _deny(
-                "telemetry is hard-disabled in KiroCrew Codex Edition",
+                "telemetry is hard-disabled in VibecodersCrew",
                 f"{path_key}={value}",
                 403,
             )

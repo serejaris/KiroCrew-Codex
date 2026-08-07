@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Security Module
 
 Latest amendment: 2026-07-27 (the Kiro CLI is now always executed IN PLACE — the
@@ -945,7 +946,7 @@ an unverified candidate through the absolute system `/usr/bin/env` entrypoint,
 preventing a planted `kiro-cli` basename from selecting the provider's trusted
 internal macOS delegation path. The strict wrapper additionally hides the
 configured data home, `~/.kiro/crew`, `~/.kirocrew`, and all known Kiro
-identity stores, so setup probes cannot read Kiro Crew state or bearer tokens.
+identity stores, so setup probes cannot read Vibecoders Crew state or bearer tokens.
 Trust is "the CLI runs, and it has a valid login": a Kiro CLI that answers
 `--version` is eligible for `whoami` and device login, regardless of install
 source, owner, or fixed path. KiroCrew is not the authority on where Kiro CLI
@@ -973,7 +974,7 @@ target.
 Auth commands use `mode="standard"`; the fixed `~/.kiro/crew-auth-staging`
 parent is on the shared sensitive-path floor and hidden by every agent sandbox.
 Sign-in is delegated to Kiro CLI: `login --use-device-flow` runs against the
-user's real home and environment with only the Kiro Crew data homes — the
+user's real home and environment with only the Vibecoders Crew data homes — the
 configured home, `~/.kiro/crew`, `~/.kirocrew` — hidden, and the CLI writes
 its own credential store where it normally keeps it. KiroCrew stages no
 credentials and copies none back, so there is no publication step, no
@@ -986,7 +987,7 @@ credential-minimal temporary home remains available as an opt-in read-only mode
 for callers that must never see the real `~/.aws` / `~/.ssh`: its random
 per-call workspace below the staging parent receives HOME/XDG/AppData and holds
 only the allowlisted `kiro-auth-token*.json` and Kiro CLI identity SQLite files,
-the identity stores are hidden on top of the Kiro Crew data homes, and the
+the identity stores are hidden on top of the Vibecoders Crew data homes, and the
 workspace is removed on every exit path — success, failure, timeout,
 cancellation, or exception. A matched live identity file that cannot be captured
 under the bounded regular-file rules aborts that staging path before the command

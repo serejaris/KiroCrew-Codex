@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """Authenticated dashboard handlers for Kiro CLI first-run setup."""
 
 from __future__ import annotations

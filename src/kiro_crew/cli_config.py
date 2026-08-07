@@ -1,3 +1,5 @@
+# Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew).
+# See NOTICE and CHANGELOG.md for the nature of the modifications.
 """CLI config subcommand — get, set, edit configuration values."""
 
 from __future__ import annotations
@@ -88,7 +90,7 @@ def _config_cmd(args: argparse.Namespace) -> None:
             )
             if telemetry_enable_requested and not beacon.OUTBOUND_TELEMETRY_ENABLED:
                 print(
-                    "❌ Telemetry is hard-disabled in KiroCrew Codex Edition.",
+                    "❌ Telemetry is hard-disabled in VibecodersCrew.",
                     file=sys.stderr,
                 )
                 print("   No configuration change was written.", file=sys.stderr)

@@ -1,3 +1,4 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Computer Use Module (native desktop GUI automation)
 
 Lets the agent **read and drive the operator's own desktop applications** through
@@ -1498,8 +1499,8 @@ ONLY one, and the consequences should be stated rather than discovered:
   third is load-bearing: the dashboard is also reachable as a **browser tab**, where
   the app identity is Chrome's or Safari's and a bundle/name rule cannot fire at all
   (reviewer finding). `DeniedApp.title_substrings` matches the resolved window title,
-  as a substring — the tab title takes a badge prefix (`(3) Kiro Crew`) and popouts a
-  `… — Kiro Crew` suffix. And because input is delivered per-PID
+  as a substring — the tab title takes a badge prefix (`(3) Vibecoders Crew`) and popouts a
+  `… — Vibecoders Crew` suffix. And because input is delivered per-PID
   (`CGEventPostToPid`), `apps_macos.list_apps` prefers a DENIED title over an
   innocuous one when one process owns several windows: a dashboard in a background
   tab must refuse the whole browser, not just that window.

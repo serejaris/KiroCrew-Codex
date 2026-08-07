@@ -1,6 +1,25 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 # Changelog
 
-All notable changes to KiroCrew are documented in this file.
+All notable changes to VibecodersCrew are documented in this file.
+
+## [1.0.0] - 2026-08-07
+
+### Changed
+- Public product identity rebranded to **VibecodersCrew** (independent community fork of Kiro Crew).
+- Repository target: `serejaris/vibecoderscrew`. CLI entry points: `vibecoderscrew` (primary) and `kirocrew` (technical compatibility alias). Desktop appId: `tech.serejaris.vibecoderscrew`.
+- Product telemetry remains hard-disabled (beacon, install receipts, local JSONL metrics, OTLP export, Electron profiling). Environment variables cannot re-enable outbound product telemetry.
+- Default embedding-model CDN download removed. Set `KIROCREW_EMBED_MODEL_URL` or `memory.embed_model_url` (https) or a local `memory.embed_model_path` to enable embeddings; otherwise memory stays on keyword/FTS search.
+- Public CI no longer uploads unsigned wheel/desktop artifacts (source-only distribution policy).
+- Apache-2.0 §4(b) modification notices added on modified source files; see NOTICE.
+- Removed tracked `temp-screenshots/` from the public tree.
+
+### Added
+- OpenAI Codex App Server provider (existing ChatGPT/Codex login; no Amazon/Kiro account required).
+
+### Notes
+- Internal Python package path remains `kiro_crew` for mergeability with upstream. This is a technical module path, not the product name.
+- Data home path remains the inherited `~/.kiro/crew` layout for compatibility with existing installs; override with `KIROCREW_HOME`.
 
 ## [0.2.0] — 2026-08-06
 

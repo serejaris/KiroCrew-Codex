@@ -1,8 +1,9 @@
+<!-- Modified 2026 by Sereja Ris for VibecodersCrew (community fork of Kiro Crew). See NOTICE and CHANGELOG.md. -->
 <p align="center">
-  <img src="assets/banner.svg" alt="Kiro Crew. Keep work moving. Runs on your hardware, remembers across sessions, keeps working unattended.">
+  <img src="assets/banner.svg" alt="Vibecoders Crew. Keep work moving. Runs on your hardware, remembers across sessions, keeps working unattended.">
 </p>
 
-<h1 align="center">KiroCrew Codex Edition</h1>
+<h1 align="center">VibecodersCrew</h1>
 
 > **Unofficial community fork.** This repository is based on
 > [KiroCrew v0.1.3](https://github.com/kirodotdev/KiroCrew/releases/tag/v0.1.3)
@@ -15,18 +16,18 @@
 </p>
 
 <p align="center">
-  Kiro Crew is an open source development workspace that runs locally or remotely on
+  Vibecoders Crew is an open source development workspace that runs locally or remotely on
   your hardware. It is persistent, self-learning, and self-evolving. Work with it
   from the desktop app, web dashboard, and CLI, or continue the same work through
   connection tools like Slack and Discord.
   Your multi-step tasks can run unattended, recurring jobs run on your schedule,
-  and heartbeats monitor systems until something needs attention. Kiro Crew Apps
+  and heartbeats monitor systems until something needs attention. Vibecoders Crew Apps
   tailor that experience to a specific job, combining a purpose-built interface
   with agents, skills, schedules, integrations, and backend services.
 </p>
 
 <p align="center">
-  <a href="https://github.com/serejaris/KiroCrew-Codex/releases"><img src="https://img.shields.io/badge/Release-source-2f6feb?style=flat-square" alt="Download the KiroCrew Codex source release"></a>
+  <a href="https://github.com/serejaris/vibecoderscrew/releases"><img src="https://img.shields.io/badge/Release-source-2f6feb?style=flat-square" alt="Download the VibecodersCrew source release"></a>
   <a href="docs/README.md"><img src="https://img.shields.io/badge/Documentation-1f6feb?style=flat-square" alt="Read the documentation"></a>
   <a href="docs/install.md"><img src="https://img.shields.io/badge/Install%20guide-macOS%20%7C%20Linux%20%7C%20Windows-6e7781?style=flat-square" alt="Install guide for macOS, Linux, and Windows"></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/Contributing-238636?style=flat-square" alt="Contributing guide"></a>
@@ -37,7 +38,7 @@
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="#build-from-source">Build from source</a> ·
-  <a href="#why-kiro-crew">Why Kiro Crew</a> ·
+  <a href="#why-kiro-crew">Why Vibecoders Crew</a> ·
   <a href="#what-kiro-crew-does">Capabilities</a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="#security-and-control">Security</a> ·
@@ -63,9 +64,9 @@ supported through a native source install; follow the
 [Windows guide](docs/windows-install.md) instead of the shell steps below.
 
 ```bash
-# 1. Clone and build Kiro Crew
-git clone https://github.com/serejaris/KiroCrew-Codex.git
-cd KiroCrew-Codex
+# 1. Clone and build Vibecoders Crew
+git clone https://github.com/serejaris/vibecoderscrew.git
+cd vibecoderscrew
 make build
 source .venv/bin/activate
 
@@ -76,9 +77,9 @@ kirocrew doctor
 kirocrew gateway
 ```
 
-## Why Kiro Crew
+## Why Vibecoders Crew
 
-Most agent sessions end when the chat closes. Kiro Crew runs continuously on
+Most agent sessions end when the chat closes. Vibecoders Crew runs continuously on
 hardware you control and keeps working between conversations.
 
 **Persistent.** Sessions, memory, schedules, and task checkpoints survive
@@ -89,7 +90,7 @@ the terminal.
 Preferences and project context carry into new sessions.
 
 **Self-evolving.** Repeated patterns become reusable skills. Memory, lessons,
-and skills stay visible and editable, so each Kiro Crew grows more tailored to
+and skills stay visible and editable, so each Vibecoders Crew grows more tailored to
 the person and work around it.
 
 **Runs where you choose.** Your Mac, a local container, or a remote machine
@@ -99,14 +100,14 @@ you control.
 or continue the same work from the CLI and messaging surfaces like Slack and
 Discord.
 
-## What Kiro Crew does
+## What Vibecoders Crew does
 
 | Capability | What it gives you |
 |---|---|
 | **Persistent sessions** | Run concurrent, isolated conversations, resume them after Gateway restarts, search prior sessions, and carry recent context into new work. |
 | **Self-learning** | Turn corrections and task failures into durable lessons that change later behavior. Keep preferences, active-project context, and history scoped to the relevant workspace. Say *"no, always run the frontend checks before calling a change done"* and it becomes a workspace-scoped lesson applied in future sessions. |
 | **Self-evolving skills** | Synthesize reusable skills from repeated patterns, then inspect, refine, or remove them as your work changes. |
-| **Long-running tasks** | Give Kiro Crew a task spec and walk away. It plans steps, executes them, validates results, retries failures, and resumes from checkpoints. *"Implement this migration plan and stop if the tests fail"* runs as a checkpointed task with validation at each step. |
+| **Long-running tasks** | Give Vibecoders Crew a task spec and walk away. It plans steps, executes them, validates results, retries failures, and resumes from checkpoints. *"Implement this migration plan and stop if the tests fail"* runs as a checkpointed task with validation at each step. |
 | **Unattended autonomy** | Run scheduled agent work or deterministic scripts and commands without a model call. Monitor work until it is done, or react to messaging events and authenticated webhooks without someone at the terminal. *"Every weekday at 9, summarize the open work I should review"* becomes a timezone-aware recurring job delivered to the surface you choose. |
 | **Delegation** | Spawn isolated subagents for parallel work and bring their results back into the parent conversation. *"Research these three options in parallel and recommend one"* fans out to isolated subagents and synthesizes the tradeoffs. |
 | **Work where you choose** | Work directly in the desktop app or web dashboard, or continue through the CLI and any connected messaging surface without moving the agent runtime or its state. |
@@ -115,7 +116,7 @@ Discord.
 | **Visible execution** | Watch tool calls, subagent progress, context usage, approvals, schedules, memory, and logs from the dashboard. |
 | **Defense in depth** | Combine tool approvals, OS sandboxing, sensitive-path checks, credential redaction, deny rules, audit events, and governance profiles. |
 
-You can also paste a screenshot and ask what is causing an error. Kiro Crew sends
+You can also paste a screenshot and ask what is causing an error. Vibecoders Crew sends
 the image to the active provider model and keeps the diagnosis in the conversation
 history.
 
@@ -148,12 +149,12 @@ scheduling, approvals, memory, security policy, messaging connections, and the
 dashboard.
 
 The current runtime places the Gateway, agent sessions, provider processes, and state
-on the same host. Run Kiro Crew on your Mac, inside a container on your machine,
+on the same host. Run Vibecoders Crew on your Mac, inside a container on your machine,
 or on a remote Linux host you control. Conversation history, memory, and
 knowledge indexes remain on that host. Model requests are handled by the active
 provider and follow the account and model configuration used by Codex or Kiro.
 
-**Gateway.** The Gateway is the long-running Kiro Crew process. It routes
+**Gateway.** The Gateway is the long-running Vibecoders Crew process. It routes
 messages from the desktop app, web, CLI, and the messaging surfaces listed below. It persists
 session state, injects memory and skills, starts scheduled work, coordinates
 subagents, brokers approvals, enforces runtime policy, and exposes activity in
@@ -165,7 +166,7 @@ subagents also use managed sessions. These sessions preserve conversation
 context and can run concurrently before returning results to a parent session or
 configured surface.
 
-**Provider runtimes and turns.** Kiro Crew supports the official Codex App
+**Provider runtimes and turns.** Vibecoders Crew supports the official Codex App
 Server and the optional `kiro-cli` ACP runtime. During each turn, the session
 sends a prompt, streams model and tool events, resolves approvals, and returns
 the final result. An agent session is a logical isolation boundary, not
@@ -196,7 +197,7 @@ necessarily one OS process.
 | **Task runner** | Bounded projects with explicit steps, tests, review, and checkpoint resume | `kirocrew run TASK.md` |
 | **Subagents** | Independent workstreams that can run concurrently | `kirocrew spawn run "task"` |
 
-**Memory, learning, and evolution.** Kiro Crew maintains preferences, active
+**Memory, learning, and evolution.** Vibecoders Crew maintains preferences, active
 project context, decaying history summaries, and durable lessons. Corrections
 and task failures can change later behavior, while repeated patterns can become
 reusable skills. In-process embeddings add semantic retrieval for memory and
@@ -207,14 +208,14 @@ a conversation should not persist.
 **Skills, MCP, and apps.** Markdown skills supply reusable workflows and can be
 loaded only when relevant. The built-in `kirocrew-core` and `kirocrew-cron` MCP
 servers expose task, subagent, learning, messaging, and scheduling tools. You
-can discover additional MCP servers from Kiro or Kiro Crew configuration. The
+can discover additional MCP servers from Kiro or Vibecoders Crew configuration. The
 App Kit adds installable interfaces and domain workflows. Apps can add dashboard
 pages, use scoped Gateway APIs, subscribe to events, and register lifecycle
 hooks.
 
 ## Security and control
 
-Kiro Crew gives an AI agent real tool access, so the controls are enforced at
+Vibecoders Crew gives an AI agent real tool access, so the controls are enforced at
 the runtime boundary instead of relying only on prompt instructions.
 
 - **Local by default.** The dashboard binds to loopback unless you explicitly
@@ -227,7 +228,7 @@ the runtime boundary instead of relying only on prompt instructions.
   Seatbelt isolation. Standard, strict, and off modes make the tradeoff explicit
   for that ACP runtime. Windows does not currently provide the additional
   KiroCrew namespace/Seatbelt layer.
-- **Sensitive data guards.** Kiro Crew blocks direct access to protected paths,
+- **Sensitive data guards.** Vibecoders Crew blocks direct access to protected paths,
   strips sensitive environment variables, and redacts credential patterns from
   output before it reaches a chat surface.
 - **Denied operations.** 137 bundled deny patterns block destructive commands and
@@ -257,7 +258,7 @@ python -m pip install dist/kirocrew-*.whl
 ```
 
 **Semantic memory.** Semantic memory needs no setup. Embeddings run in-process, and the Gateway
-downloads its embedding model in the background on first start, verifies it,
+can download an embedding model when you configure a model URL or local path, verifies it,
 and stores it under `~/.kiro/crew/models`. Until the model lands, memory search
 falls back to keyword search and picks up embeddings automatically without a
 restart. Set `KIROCREW_EMBED_MODEL_URL` to point at a mirror for airgapped
@@ -266,11 +267,11 @@ installs.
 See [Installing and Building](docs/install.md) for wheels, desktop builds,
 Windows, optional voice dependencies, and manual setup.
 
-**Choose where Kiro Crew runs.** The current deployment model keeps the Gateway,
+**Choose where Vibecoders Crew runs.** The current deployment model keeps the Gateway,
 agent session runtime, ACP processes, and state together on one host. Your apps
 and chat surfaces connect to that Gateway.
 
-| Deployment | How to run it | Where Kiro Crew and its state live |
+| Deployment | How to run it | Where Vibecoders Crew and its state live |
 |---|---|---|
 | **Mac app, local** | Install or build the desktop app with `make desktop` | The app starts its bundled Gateway. Agent sessions, ACP processes, and `~/.kiro/crew` stay on your Mac. |
 | **Native local** | `make build`, or install a wheel from `make wheel` | The Gateway and agent runtime run directly on your macOS, Linux, or Windows machine. |
@@ -288,8 +289,8 @@ kirocrew logs
 
 The desktop app can use this local Gateway or connect to a remote one. For an
 always-on VPS, home server, or cloud VM in your account, follow the
-[remote host guide](docs/remote-desktop-setup.md). Kiro Crew does not require a
-Kiro Crew-hosted control plane.
+[remote host guide](docs/remote-desktop-setup.md). Vibecoders Crew does not require a
+Vibecoders Crew-hosted control plane.
 
 **Configure it.** User data lives under `~/.kiro/crew` by default. Manage the
 main configuration with `kirocrew config get`, `set`, and `edit`.
@@ -306,7 +307,7 @@ main configuration with `kirocrew config get`, `set`, and `edit`.
     "pool_size": 2
   },
   "dashboard": {
-    "bot_name": "Kiro Crew"
+    "bot_name": "Vibecoders Crew"
   }
 }
 ```
@@ -331,10 +332,16 @@ model finished downloading under `~/.kiro/crew/models`. For a stale MCP configur
 
 ## Telemetry
 
-KiroCrew Codex Edition collects and sends no product telemetry. The inherited
-anonymous heartbeat, app-install receipts, local OpenTelemetry/JSONL metrics,
-and OTLP export are hard-disabled. Old config values and environment variables
-cannot enable them.
+VibecodersCrew collects and sends no product telemetry.
+
+Outbound beacon, install receipts, local OpenTelemetry/JSONL product metrics,
+OTLP export, and Electron profiling are hard-disabled. Legacy config values and
+environment variables cannot turn them back on.
+
+Embedding models are not fetched from any default CDN on first install. Configure
+`KIROCREW_EMBED_MODEL_URL`, `memory.embed_model_url` (https), or a local
+`memory.embed_model_path` if you want semantic memory; otherwise search stays on
+keyword/FTS.
 
 ## Docs and contributing
 
@@ -362,15 +369,15 @@ npm run check
 npm run build
 ```
 
-Use [GitHub Issues](https://github.com/serejaris/KiroCrew-Codex/issues) for bugs and
+Use [GitHub Issues](https://github.com/serejaris/vibecoderscrew/issues) for bugs and
 feature requests. Do not file security vulnerabilities publicly.
 
 
 ## Contributors
 
-Kiro Crew was made possible by its internal community, the people who supported the
+Vibecoders Crew was made possible by its internal community, the people who supported the
 project and shipped its code, together with everyone who has since opened a pull
-request in the open. This is that founding group; as Kiro Crew grows in the open, we
+request in the open. This is that founding group; as Vibecoders Crew grows in the open, we
 look forward to many more contributors joining them. Thank you to everyone who helped
 make this tool possible:
 
@@ -703,6 +710,6 @@ to be added, corrected, or removed, please open an issue or a pull request.
 
 ## License
 
-Kiro Crew is licensed under the [Apache License 2.0](LICENSE). See
+Vibecoders Crew is licensed under the [Apache License 2.0](LICENSE). See
 [NOTICE](NOTICE) for upstream attribution and the community-fork modification
 notice.
