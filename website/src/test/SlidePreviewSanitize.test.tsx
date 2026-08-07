@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 /**
  * SVG sanitising for the slide preview.
  *

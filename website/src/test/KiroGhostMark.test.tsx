@@ -36,7 +36,9 @@ describe('KiroGhostMark', () => {
     // currentColor is what makes the glyph inherit the nav row's text colour.
     expect(getByTestId('kiro-ghost-mark').style.backgroundColor).toBe('currentcolor')
     const style = maskStyle()
-    expect(style).toContain('kiro-ghost-mark') // the ghost asset is the mask source
+    // Vite 6 inlines this small tracked SVG as a data URL; the mask still comes
+    // from the imported ghost asset and remains self-contained/offline.
+    expect(style).toContain('data:image/svg+xml')
     expect(style).toContain('mask-size:contain')
   })
 

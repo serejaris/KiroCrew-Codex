@@ -1,15 +1,13 @@
-// @vitest-environment happy-dom
+// @vitest-environment jsdom
 //
-// XSS regression guard for the jsdom -> happy-dom test-DOM migration.
+// XSS regression guard for DOMPurify's supported server-side test DOM.
 //
-// `src/api/helpers.ts` runs DOMPurify against the GLOBAL document, which under
-// the migration is happy-dom's, not jsdom's. DOMPurify's own docs caution that
-// non-browser DOMs can differ from real browsers, so a parser-difference COULD
-// (in theory) let a payload slip through a sanitizer test that jsdom would have
-// caught.
+// DOMPurify explicitly supports current jsdom and warns that happy-dom is not a
+// safe sanitizer host. Keep the security-boundary unit tests on jsdom even
+// though the general UI suite uses happy-dom for speed.
 //
 // This is the FAST supplemental guard: it pins DOMPurify's neutralization of the
-// classic vectors under happy-dom so a parser regression fails here immediately,
+// classic vectors under jsdom so a parser regression fails here immediately,
 // without booting a browser. Authoritative real-browser fidelity — the concern
 // that happy-dom's parser could mutate a payload differently than Chromium
 // (mutation-XSS especially) — is covered by the companion Playwright spec
@@ -23,7 +21,7 @@
 import { describe, it, expect } from 'vitest'
 import { sanitize } from '../api/helpers'
 
-describe('DOMPurify XSS neutralization under happy-dom', () => {
+describe('DOMPurify XSS neutralization under jsdom', () => {
   it('strips <script> element and its payload', () => {
     const out = sanitize('<div>ok</div><script>alert(1)</script>')
     expect(out).not.toMatch(/<script/i)

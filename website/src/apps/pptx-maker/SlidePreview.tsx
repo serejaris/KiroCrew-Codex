@@ -204,7 +204,7 @@ function scrubStyleAttribute(element: Element): void {
   // CSS resolves escapes while tokenising, so `\75 rl(…)` is a live `url(` that
   // no scan of the raw text would see. Legitimate presentation styles never need
   // an escape, so their presence retires the whole attribute.
-  if (raw.includes('\\')) {
+  if (raw.includes('\\') || FETCHING_CSS_FN_RE.test(raw) || CSS_IMPORT_RE.test(raw)) {
     element.removeAttribute('style')
     return
   }

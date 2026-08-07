@@ -1,6 +1,8 @@
-// Test DOM is happy-dom (see `test.environment` below). It replaced jsdom to
-// drop the transitively-deprecated whatwg-encoding dep; happy-dom also needs
-// only Node>=20 (CI's version). happy-dom does REAL network I/O for iframe
+// The general test DOM is happy-dom (see `test.environment` below) for speed.
+// DOMPurify security-boundary tests opt into current jsdom per-file because
+// DOMPurify officially supports jsdom and explicitly warns against happy-dom as
+// a sanitizer host. Real-browser coverage remains in Playwright. happy-dom does
+// REAL network I/O for iframe
 // navigation + eager <script src> loading; that is neutralized in the msw
 // layer — the catch-all fallback handler in integration/mocks/server.ts answers
 // otherwise-unmatched requests before any dial — with happy-dom's official

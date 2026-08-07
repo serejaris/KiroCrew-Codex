@@ -73,8 +73,13 @@ afterEach(() => {
 describe('EmbedTabStrip', () => {
   it('renders with activeSlot tab when no stored state', () => {
     wrap(<EmbedTabStrip />)
-    // With activeSlot='chat-1' in store and no sessionStorage, loadTabs uses activeSlot
     expect(screen.getByText('First Chat')).toBeTruthy()
+  })
+
+  it('keeps a direct embed chat URL before Redux hydration supplies activeSlot', () => {
+    wrap(<EmbedTabStrip />, { chat: { activeSlot: null } })
+    expect(screen.getByText('First Chat')).toBeTruthy()
+    expect(mockNavigate).toHaveBeenCalledWith('/embed/chat/chat-1?sid=chat-1', { replace: true })
   })
 
   it('renders tab from sessionStorage', () => {

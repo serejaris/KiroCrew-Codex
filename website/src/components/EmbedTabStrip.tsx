@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { useAppSelector, useAppDispatch } from '../store'
 import { createSlot } from '../store/chatSlice'
@@ -18,8 +18,18 @@ interface EmbedTabsWindow extends Window {
 const STORAGE_KEY = 'kirocrew-embed-tabs'
 const STORAGE_INDEX_KEY = 'kirocrew-embed-active-index'
 
-function loadTabs(activeSlot: string | null): { tabs: Tab[]; index: number } {
-  // Priority: sessionStorage > window.__kirocrewTabs > activeSlot > empty
+function embedChatSlug(pathname: string): string | null {
+  const match = /^\/embed\/chat\/([^/]+)\/?$/.exec(pathname)
+  if (!match) return null
+  try {
+    return decodeURIComponent(match[1])
+  } catch {
+    return match[1]
+  }
+}
+
+function loadTabs(activeSlot: string | null, pathname: string): { tabs: Tab[]; index: number } {
+  // Priority: sessionStorage > window.__kirocrewTabs > URL deep link > activeSlot > empty
   try {
     const stored = sessionStorage.getItem(STORAGE_KEY)
     const storedIndex = sessionStorage.getItem(STORAGE_INDEX_KEY)
@@ -31,18 +41,21 @@ function loadTabs(activeSlot: string | null): { tabs: Tab[]; index: number } {
   const w = window as EmbedTabsWindow
   const injected = w.__kirocrewTabs
   if (injected?.length) return { tabs: injected.map(s => ({ slug: s })), index: w.__kirocrewActiveTabIndex ?? 0 }
+  const linkedSlug = embedChatSlug(pathname)
+  if (linkedSlug) return { tabs: [{ slug: linkedSlug }], index: 0 }
   if (activeSlot) return { tabs: [{ slug: activeSlot }], index: 0 }
   return { tabs: [{ slug: '' }], index: 0 }
 }
 
 export default function EmbedTabStrip() {
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useAppDispatch()
   const slots = useAppSelector(s => s.dashboard.slots)
   const activeSlot = useAppSelector(s => s.chat.activeSlot)
 
-  const [tabs, setTabs] = useState<Tab[]>(() => loadTabs(activeSlot).tabs)
-  const [activeIndex, setActiveIndex] = useState(() => loadTabs(activeSlot).index)
+  const [tabs, setTabs] = useState<Tab[]>(() => loadTabs(activeSlot, location.pathname).tabs)
+  const [activeIndex, setActiveIndex] = useState(() => loadTabs(activeSlot, location.pathname).index)
 
   const tabsRef = useRef(tabs)
   tabsRef.current = tabs
